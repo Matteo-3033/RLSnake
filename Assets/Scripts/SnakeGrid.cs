@@ -15,7 +15,6 @@ public class SnakeGrid: MonoBehaviour {
     public int Width => width;
     public int Height => height;
     
-    public event EventHandler<EventArgs> OnReset;
     public event EventHandler<EventArgs> OnCollision;
     public event EventHandler<EventArgs> OnAppleEaten;
     public event EventHandler<EventArgs> OnMoveOutside;
@@ -139,8 +138,6 @@ public class SnakeGrid: MonoBehaviour {
                 _gridArray[y, x] = Element.None;
             }
         }
-        
-        OnReset?.Invoke(this, EventArgs.Empty);
     }
 
     public Vector2 GetRandomFreePosition()
