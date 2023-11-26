@@ -4,12 +4,13 @@ using UnityEngine;
 public class SnakeComponent : MonoBehaviour
 {
     [SerializeField] private GameObject componentPrefab;
+    public static event EventHandler<EventArgs> OnGrow; 
 
     private Vector2 _lastPosition;
     private bool _appleEaten;
 
     protected SnakeComponent PreviousSnake { get; set; }
-    protected Vector2 GridPosition { get; private set; }
+    public Vector2 GridPosition { get; private set; }
 
     protected virtual void Start()
     {
@@ -38,8 +39,8 @@ public class SnakeComponent : MonoBehaviour
 
     protected void InitPosition(Vector2 gridPosition)
     {
-        transform.position = SnakeGrid.Instance.Insert(SnakeGrid.Element.Snake, gridPosition);
         GridPosition = gridPosition;
+        transform.position = SnakeGrid.Instance.Insert(SnakeGrid.Element.Snake, GridPosition);
     }
 
     public virtual void Reset()
@@ -61,5 +62,6 @@ public class SnakeComponent : MonoBehaviour
         var snakePart = part.GetComponent<SnakeComponent>();
         PreviousSnake = snakePart;
         snakePart.InitPosition(_lastPosition);
+        OnGrow?.Invoke(this, EventArgs.Empty);
     }
 }

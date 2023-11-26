@@ -3,29 +3,31 @@ using System.Linq;
 using UnityEngine;
 
 public class SnakeGrid: MonoBehaviour {
-    [SerializeField] private int width;
-    [SerializeField] private int height;
-    [SerializeField] private float cellSize;
-    [SerializeField] private GameObject cellPrefab; 
-    
-    private float _startingY;
-    private float _startingX;
-    private Element[,] _gridArray;
-
-    public int Width => width;
-    public int Height => height;
-    
+        
     public event EventHandler<EventArgs> OnCollision;
     public event EventHandler<EventArgs> OnAppleEaten;
     public event EventHandler<EventArgs> OnMoveOutside;
     
+    [SerializeField] private int width;
+    [SerializeField] private int height;
+    [SerializeField] private float cellSize;
+    [SerializeField] private GameObject cellPrefab; 
+
+    private float _startingY;
+    private float _startingX;
+
+    public int Width => width;
+    public int Height => height;
+    private Element[][] _grid;
+
     private static SnakeGrid _instance;
     public static SnakeGrid Instance => _instance;
-
+    
     public enum Element
     {
         Snake,
         Apple,
+        Void,
         None
     }
 
@@ -46,11 +48,12 @@ public class SnakeGrid: MonoBehaviour {
         
         _startingX = transform.position.x - cellSize * width / 2 + cellSize / 2;
         _startingY = transform.position.y - cellSize * height / 2 + cellSize / 2;
-        _gridArray = new Element[height, width];
+        _grid = new Element[height][];
 
-        for (var y = 0; y < _gridArray.GetLength(0); y++)
+        for (var y = 0; y < _grid.Length; y++)
         {
-            for (var x = 0; x < _gridArray.GetLength(1); x++)
+            _grid[y] = new Element[width];
+            for (var x = 0; x < _grid[y].Length; x++)
             {
                 var position = new Vector3(_startingX + x * cellSize, _startingY + y * cellSize, transform.position.z);
                 var cell = Instantiate(cellPrefab, position, Quaternion.identity, transform);
@@ -74,7 +77,7 @@ public class SnakeGrid: MonoBehaviour {
         }
 
         var toElement = GetElementAt(to);
-        Debug.Log($"from {from} ({fromElement}) to {to} ({toElement})");
+        //Debug.Log($"from {from} ({fromElement}) to {to} ({toElement})");
         
         SetElementAt(from, Element.None);
         SetElementAt(to, fromElement);
@@ -99,53 +102,78 @@ public class SnakeGrid: MonoBehaviour {
         if (!IsEmpty(coord))
             throw new Exception("Cannot insert element at non-empty cell");
         
-        _gridArray[(int) coord.y, (int) coord.x] = el;
+        _grid[(int) coord.y][(int) coord.x] = el;
         
         return GetPositionAt(coord);
     }
 
-    public Element GetElementAt(Vector2 coord)
+    private Element GetElementAt(Vector2 coord)
     {
-        return _gridArray[(int) coord.y, (int) coord.x];
+        return _grid[(int) coord.y][(int) coord.x];
     }
-    
-    public void SetElementAt(Vector2 coord, Element el)
+
+    private void SetElementAt(Vector2 coord, Element el)
     {
-        _gridArray[(int)coord.y, (int)coord.x] = el;
+        _grid[(int)coord.y][(int)coord.x] = el;
     }
     
     private Vector3 GetPositionAt(Vector2 coord)
     {
         return new Vector3(_startingX + coord.x * cellSize, _startingY + coord.y * cellSize, 0);
     }
-    
-    public bool IsEmpty(Vector2 coord)
+
+    private bool IsEmpty(Vector2 coord)
     {
         return GetElementAt(coord) == Element.None;
     }
 
-    public bool IsValid(Vector2 coord)
+    private bool IsValid(Vector2 coord)
     {
         return coord.x >= 0 && coord.x < width && coord.y >= 0 && coord.y < height;
     }
 
     public void Reset()
     {
-        for (var y = 0; y < _gridArray.GetLength(0); y++)
+        foreach (var t in _grid)
         {
-            for (var x = 0; x < _gridArray.GetLength(1); x++)
+            for (var x = 0; x < t.Length; x++)
             {
-                _gridArray[y, x] = Element.None;
+                t[x] = Element.None;
             }
         }
     }
 
-    public Vector2 GetRandomFreePosition()
+    public Vector2 GetRandomFreePosition(Vector2? not = null)
     {
-        return Enumerable.Range(0, _gridArray.GetLength(0))
-            .SelectMany(y => Enumerable.Range(0, _gridArray.GetLength(1)).Select(x => new Vector2(x, y)))
-            .Where(coord => GetElementAt(coord) == Element.None)
+        return Enumerable.Range(0, _grid.Length)
+            .SelectMany(y => Enumerable.Range(0, _grid[y].Length).Select(x => new Vector2(x, y)))
+            .Where(coord => coord != not && IsEmpty(coord))
             .OrderBy(_ => Guid.NewGuid())
             .FirstOrDefault();
+    }
+    
+    public Element[][] GetSquareCenteredIn(Vector2 center, int size = 3)
+    {
+        if (size % 2 == 0)
+            throw new Exception("size must be odd");
+        
+        var res = new Element[size][];
+
+        var offset = size / 2;
+        for (var i = 0; i < size; i++)
+        {
+            res[i] = new Element[size];
+            for (var j = 0; j < size; j++)
+            {
+                var y = (int)center.y + i - offset;
+                var x = (int)center.x + j - offset;
+
+                if (y < 0 || y >= _grid.Length || x < 0 || x >= _grid[y].Length)
+                    res[i][j] = Element.Void;
+                else res[i][j] = _grid[y][x];    // == Element.Snake ? Element.Snake : Element.None;
+            }
+        }
+
+        return res;
     }
 }
