@@ -84,10 +84,26 @@ public class Environment : MonoBehaviour
     {
         if (IsEpisodeFinished())
             throw new Exception("Episode already finished; invoke Reset to start a new one");
-        _nextReward = -1;
+        _nextReward = GetDirectionReward(action);
         gameManager.ChangeDirection(action);
     }
-    
+
+    private int GetDirectionReward(SnakeHead.Direction action)
+    {
+        var appleDirection = gameManager.GetAppleDirection();
+        
+        switch (action)
+        {
+            case SnakeHead.Direction.Up when appleDirection is GameManager.AppleDirection.Top or GameManager.AppleDirection.TopLeft or GameManager.AppleDirection.TopRight:
+            case SnakeHead.Direction.Down when appleDirection is GameManager.AppleDirection.Bottom or GameManager.AppleDirection.BottomLeft or GameManager.AppleDirection.BottomRight:
+            case SnakeHead.Direction.Left when appleDirection is GameManager.AppleDirection.Left or GameManager.AppleDirection.TopLeft or GameManager.AppleDirection.BottomLeft:
+            case SnakeHead.Direction.Right when appleDirection is GameManager.AppleDirection.Right or GameManager.AppleDirection.TopRight or GameManager.AppleDirection.BottomRight:
+                return 1;
+            default:
+                return -1;
+        }
+    }
+
     public GameManager.State GetState()
     {
         return gameManager.GetGameState(squareSize);
@@ -110,12 +126,12 @@ public class Environment : MonoBehaviour
     
     private void SnakeComponent_OnGrow(object sender, EventArgs e)
     {
-        _nextReward = 10;
+        _nextReward = 2;
     }
     
     private void OnDeath()
     {
-        _nextReward = -10;
+        _nextReward = -2;
     }
 
     public bool IsEpisodeFinished()

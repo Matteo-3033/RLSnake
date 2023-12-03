@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
         };
     }
 
-    private AppleDirection GetAppleDirection()
+    public AppleDirection GetAppleDirection()
     {
         var applePos = appleGenerator.GridPosition;
         var snakePos = snake.GridPosition;
