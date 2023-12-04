@@ -17,7 +17,7 @@ public class SnakeHead : SnakeComponent
         Down
     }
     
-    private readonly Dictionary<Direction, Vector2> _directionToVector = new Dictionary<Direction, Vector2>
+    private readonly Dictionary<Direction, Vector2> _directionToVector = new()
     {
         { Direction.Right, Vector2.right },
         { Direction.Left, Vector2.left },
@@ -73,7 +73,7 @@ public class SnakeHead : SnakeComponent
         _direction = Direction.Right;
         _lastDirection = null;
         
-        InitPosition(SnakeGrid.Instance.GetRandomFreePosition());
+        InitPosition(grid.GetRandomFreePosition());
         StartCoroutine(nameof(UpdatePosition));
     }
 

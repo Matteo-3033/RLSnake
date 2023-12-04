@@ -1,9 +1,9 @@
-using System;
 using UnityEngine;
 
 public class AppleGenerator : MonoBehaviour
 {
     [SerializeField] private GameObject applePrefab;
+    [SerializeField] private SnakeGrid grid;
     
     private GameObject _apple;
     
@@ -22,8 +22,8 @@ public class AppleGenerator : MonoBehaviour
 
     private void GenerateApple()
     {
-        GridPosition = SnakeGrid.Instance.GetRandomFreePosition(GridPosition);
-        var applePos = SnakeGrid.Instance.Insert(SnakeGrid.Element.Apple, GridPosition);
+        GridPosition = grid.GetRandomFreePosition(GridPosition);
+        var applePos = grid.Insert(SnakeGrid.Element.Apple, GridPosition);
 
         _apple = Instantiate(applePrefab, Vector3.zero, Quaternion.identity, transform);
         _apple.name = "Apple";

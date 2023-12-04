@@ -4,7 +4,9 @@ using UnityEngine;
 public class SnakeComponent : MonoBehaviour
 {
     [SerializeField] private GameObject componentPrefab;
-    public static event EventHandler<EventArgs> OnGrow; 
+    [SerializeField] protected SnakeGrid grid;
+    
+    public event EventHandler<EventArgs> OnGrow;
 
     private Vector2 _lastPosition;
     private bool _appleEaten;
@@ -14,12 +16,12 @@ public class SnakeComponent : MonoBehaviour
 
     protected virtual void Start()
     {
-        SnakeGrid.Instance.OnAppleEaten += SnakeGrid_OnAppleEaten;
+        grid.OnAppleEaten += SnakeGrid_OnAppleEaten;
     }
 
     protected void MoveTo(Vector2 newGridPosition)
     {
-        var newPosition = SnakeGrid.Instance.MoveFromTo(GridPosition, newGridPosition);
+        var newPosition = grid.MoveFromTo(GridPosition, newGridPosition);
         if (newPosition == null) return;
         
         transform.position = newPosition.Value;
@@ -29,18 +31,17 @@ public class SnakeComponent : MonoBehaviour
         
         if (PreviousSnake != null)
             PreviousSnake.MoveTo(_lastPosition);
+
+        if (!_appleEaten) return;
         
-        if (_appleEaten)
-        {
-            _appleEaten = false;
-            GenerateNext();
-        }
+        _appleEaten = false;
+        GenerateNext();
     }
 
     protected void InitPosition(Vector2 gridPosition)
     {
         GridPosition = gridPosition;
-        transform.position = SnakeGrid.Instance.Insert(SnakeGrid.Element.Snake, GridPosition);
+        transform.position = grid.Insert(SnakeGrid.Element.Snake, GridPosition);
     }
 
     public virtual void Reset()
@@ -60,6 +61,8 @@ public class SnakeComponent : MonoBehaviour
     {
         var part = Instantiate(componentPrefab, Vector3.zero, Quaternion.identity, transform.parent);
         var snakePart = part.GetComponent<SnakeComponent>();
+        snakePart.grid = grid;
+        snakePart.OnGrow = OnGrow;
         PreviousSnake = snakePart;
         snakePart.InitPosition(_lastPosition);
         OnGrow?.Invoke(this, EventArgs.Empty);

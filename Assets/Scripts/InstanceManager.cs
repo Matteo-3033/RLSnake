@@ -1,23 +1,28 @@
 using System;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class InstanceManager : MonoBehaviour
 {
     [SerializeField] private SnakeHead snake;
     [SerializeField] private AppleGenerator appleGenerator;
+    [SerializeField] private SnakeGrid grid;
     [SerializeField] private bool playerControlled = true;
     
     public bool Running { get; private set; }
     private int Score { get; set; }
+    
+    public SnakeHead SnakeHead => snake;
+    public SnakeGrid Grid => grid;
+    public AppleGenerator AppleGenerator => appleGenerator;
     
     public float SnakeTimeBetweenMoves => snake.timeBetweenMoves;
     
     private void Start()
     {
         Score = 0;
-        SnakeGrid.Instance.OnCollision += SnakeGrid_OnCollision;
-        SnakeGrid.Instance.OnMoveOutside += SnakeGrid_OnMoveOutside;
-        SnakeComponent.OnGrow += SnakeComponent_OnGrow;
+        grid.OnCollision += SnakeGrid_OnCollision;
+        grid.OnMoveOutside += SnakeGrid_OnMoveOutside;
+        snake.OnGrow += SnakeComponent_OnGrow;
     }
 
     private void Update()
@@ -49,7 +54,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Starting game");
         Score = 0;
         
-        SnakeGrid.Instance.Reset();
+        grid.Reset();
         appleGenerator.Reset();
         snake.Reset();
         
@@ -76,7 +81,7 @@ public class GameManager : MonoBehaviour
         return new State
         {
             AppleDirection = GetAppleDirection(),
-            Grid = SnakeGrid.Instance.GetSquareCenteredIn(snake.GridPosition, squareSize)
+            Grid = grid.GetSquareCenteredIn(snake.GridPosition, squareSize)
         };
     }
 

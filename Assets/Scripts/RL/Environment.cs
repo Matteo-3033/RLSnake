@@ -1,61 +1,59 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Environment : MonoBehaviour
 {
-    [SerializeField] private GameManager gameManager;
-    [SerializeField] private int squareSize = 3;
+    [SerializeField] private InstanceManager instanceManager;
+    [SerializeField, Range(3, int.MaxValue)] private int squareSize = 3;
     
     private int _nextReward;
-    public List<GameManager.State> States = new();
-    public List<SnakeGrid.Element[][]> Grids = new();
+    public readonly List<InstanceManager.State> States = new();
 
     private void Awake()
     {
+        if (squareSize % 2 == 0)
+            throw new Exception("squareSize must be odd");
         InitStates();
     }
 
     private void Start()
     {
-        SnakeGrid.Instance.OnCollision += SnakeGrid_OnCollision;
-        SnakeGrid.Instance.OnMoveOutside += SnakeGrid_OnMoveOutside;
-        SnakeComponent.OnGrow += SnakeComponent_OnGrow;
+        instanceManager.Grid.OnCollision += OnDeath;
+        instanceManager.Grid.OnMoveOutside += OnDeath;
+        instanceManager.Grid.OnAppleEaten += SnakeGrid_OnAppleEaten;
     }
 
-    public float TimeBetweenActions => gameManager.SnakeTimeBetweenMoves;
+    public float TimeBetweenActions => instanceManager.SnakeTimeBetweenMoves;
     
     private void InitStates()
     {
-        InitGrids();
-        for (var d = GameManager.AppleDirection.Left; d <= GameManager.AppleDirection.BottomRight; d++)
-        {
-            foreach (var grid in Grids)
-            {
-                States.Add(new GameManager.State
-                {
+        var grids = GetGrids();
+        for (var d = InstanceManager.AppleDirection.Left; d <= InstanceManager.AppleDirection.BottomRight; d++)
+            foreach (var grid in grids)
+                States.Add(new InstanceManager.State {
                     AppleDirection = d,
                     Grid = grid
                 });
-            }
-        }
     }
 
-    private void InitGrids()
+    private List<SnakeGrid.Element[][]> GetGrids()
     {
+        var grids = new List<SnakeGrid.Element[][]>();
+        
         var grid = new SnakeGrid.Element[squareSize][];
         for (var y = 0; y < grid.Length; y++)
         {
             grid[y] = new SnakeGrid.Element[squareSize];
             for (var x = 0; x < grid[y].Length; x++)
-                grid[y][x] = SnakeGrid.Element.Void;
+                grid[y][x] = SnakeGrid.Element.Snake;
         }
         
-        InitGridsRecursive(grid, 0, 0);
+        InitGridsRecursive(grids, grid, 0, 0);
+        return grids;
     }
 
-    private void InitGridsRecursive(SnakeGrid.Element[][] grid, int row, int col)
+    private void InitGridsRecursive(ICollection<SnakeGrid.Element[][]> grids, IReadOnlyList<SnakeGrid.Element[]> grid, int row, int col)
     {
         if (row == squareSize)
         {
@@ -66,7 +64,7 @@ public class Environment : MonoBehaviour
                 for (var x = 0; x < gridCopy[y].Length; x++)
                     gridCopy[y][x] = grid[y][x];
             }
-            Grids.Add(gridCopy);
+            grids.Add(gridCopy);
         }
         else
         {
@@ -75,7 +73,9 @@ public class Environment : MonoBehaviour
                 grid[row][col] = e;
                 var nextRow = col == squareSize - 1 ? row + 1 : row;
                 var nextCol = col == squareSize - 1 ? 0 : col + 1;
-                InitGridsRecursive(grid, nextRow, nextCol);
+                if (nextCol == squareSize / 2 && nextRow == squareSize / 2)
+                    nextCol++;
+                InitGridsRecursive(grids, grid, nextRow, nextCol);
             }
         }
     }
@@ -85,28 +85,28 @@ public class Environment : MonoBehaviour
         if (IsEpisodeFinished())
             throw new Exception("Episode already finished; invoke Reset to start a new one");
         _nextReward = GetDirectionReward(action);
-        gameManager.ChangeDirection(action);
+        instanceManager.ChangeDirection(action);
     }
 
     private int GetDirectionReward(SnakeHead.Direction action)
     {
-        var appleDirection = gameManager.GetAppleDirection();
+        var appleDirection = instanceManager.GetAppleDirection();
         
         switch (action)
         {
-            case SnakeHead.Direction.Up when appleDirection is GameManager.AppleDirection.Top or GameManager.AppleDirection.TopLeft or GameManager.AppleDirection.TopRight:
-            case SnakeHead.Direction.Down when appleDirection is GameManager.AppleDirection.Bottom or GameManager.AppleDirection.BottomLeft or GameManager.AppleDirection.BottomRight:
-            case SnakeHead.Direction.Left when appleDirection is GameManager.AppleDirection.Left or GameManager.AppleDirection.TopLeft or GameManager.AppleDirection.BottomLeft:
-            case SnakeHead.Direction.Right when appleDirection is GameManager.AppleDirection.Right or GameManager.AppleDirection.TopRight or GameManager.AppleDirection.BottomRight:
+            case SnakeHead.Direction.Up when appleDirection is InstanceManager.AppleDirection.Top or InstanceManager.AppleDirection.TopLeft or InstanceManager.AppleDirection.TopRight:
+            case SnakeHead.Direction.Down when appleDirection is InstanceManager.AppleDirection.Bottom or InstanceManager.AppleDirection.BottomLeft or InstanceManager.AppleDirection.BottomRight:
+            case SnakeHead.Direction.Left when appleDirection is InstanceManager.AppleDirection.Left or InstanceManager.AppleDirection.TopLeft or InstanceManager.AppleDirection.BottomLeft:
+            case SnakeHead.Direction.Right when appleDirection is InstanceManager.AppleDirection.Right or InstanceManager.AppleDirection.TopRight or InstanceManager.AppleDirection.BottomRight:
                 return 1;
             default:
                 return -1;
         }
     }
 
-    public GameManager.State GetState()
+    public InstanceManager.State GetState()
     {
-        return gameManager.GetGameState(squareSize);
+        return instanceManager.GetGameState(squareSize);
     }
 
     public int GetReward()
@@ -114,35 +114,25 @@ public class Environment : MonoBehaviour
         return _nextReward;
     }
     
-    private void SnakeGrid_OnMoveOutside(object sender, EventArgs e)
-    {
-        OnDeath();
-    }
-
-    private void SnakeGrid_OnCollision(object sender, EventArgs e)
-    {
-        OnDeath();
-    }
-    
-    private void SnakeComponent_OnGrow(object sender, EventArgs e)
+    private void SnakeGrid_OnAppleEaten(object sender, EventArgs e)
     {
         _nextReward = 2;
     }
     
-    private void OnDeath()
+    private void OnDeath(object sender, EventArgs e)
     {
         _nextReward = -2;
     }
 
     public bool IsEpisodeFinished()
     {
-        return !gameManager.Running;
+        return !instanceManager.Running;
     }
 
-    public GameManager.State ResetEnvironment()
+    public InstanceManager.State ResetEnvironment()
     {
         Debug.Log("Environment reset");
         _nextReward = 0;
-        return gameManager.StartGame();
+        return instanceManager.StartGame();
     }
 }
