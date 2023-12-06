@@ -9,11 +9,6 @@ public class AppleGenerator : MonoBehaviour
     
     public Vector2 GridPosition { get; private set; }
     
-    private void Start()
-    {
-        GenerateApple();
-    }
-    
     public void Reset()
     {
         Destroy(_apple);
