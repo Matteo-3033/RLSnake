@@ -18,9 +18,16 @@ public class RlAgent : MonoBehaviour
     
     [SerializeField] private float gamma = 0.9F;
     
-    [SerializeField] private int episodes = 1000;
+    [SerializeField] private int epochs = 1000;
     
-    private int _currentEpisode;
+    public event EventHandler<OnEpochFinishedArgs> OnEpochFinished;
+    public class OnEpochFinishedArgs: EventArgs
+    {
+        public readonly int EpochsCnt;
+        public OnEpochFinishedArgs(int epochsCnt) => EpochsCnt = epochsCnt;
+    }
+    
+    private int _currentEpoch;
     
     private InstanceManager.State _state;
     private SnakeHead.Direction _action;
@@ -57,7 +64,7 @@ public class RlAgent : MonoBehaviour
         Debug.Log("Starting training");
         while (true)
         {
-            if (_currentEpisode >= episodes) continue;
+            if (_currentEpoch >= epochs) continue;
             
             _state = environment.ResetEnvironment();
             while (!environment.IsEpisodeFinished())
@@ -84,7 +91,8 @@ public class RlAgent : MonoBehaviour
             
             epsilon = Math.Clamp(epsilon * epsilonDecay, minEpsilon, 1F);
             alpha *= alphaReductionFactor;
-            _currentEpisode++;
+            _currentEpoch++;
+            OnEpochFinished?.Invoke(this, new OnEpochFinishedArgs(_currentEpoch));
         }
         // ReSharper disable once IteratorNeverReturns
     }

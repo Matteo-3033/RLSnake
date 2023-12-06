@@ -19,7 +19,7 @@ public class Environment : MonoBehaviour
 
     private void Start()
     {
-        instanceManager.OnGameOver += OnEpisodeFinished;
+        instanceManager.OnGameOver += OnGameOver;
         instanceManager.OnSnakeGrowth += OnAppleEaten;
     }
 
@@ -119,7 +119,7 @@ public class Environment : MonoBehaviour
             _nextReward = 2;
     }
     
-    private void OnEpisodeFinished(object sender, EventArgs e)
+    private void OnGameOver(object sender, EventArgs e)
     {
         _nextReward = -2;
     }

@@ -19,8 +19,8 @@ public class UISnakeLength : MonoBehaviour
         instanceManager.OnSnakeGrowth += OnSnakeGrowth;
     }
 
-    private void OnSnakeGrowth(object sender, InstanceManager.OnSnakeGrowthArgs e)
+    private void OnSnakeGrowth(object sender, InstanceManager.OnSnakeGrowthArgs args)
     {
-        _text.text = $"{_baseText}{e.Length}";
+        _text.text = $"{_baseText}{args.Length}";
     }
 }

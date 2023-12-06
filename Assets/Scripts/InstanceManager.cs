@@ -13,12 +13,9 @@ public class InstanceManager : MonoBehaviour
     
     public class OnSnakeGrowthArgs: EventArgs
     {
-        public int Length;
+        public readonly int Length;
 
-        public OnSnakeGrowthArgs(int length)
-        {
-            Length = length;
-        }
+        public OnSnakeGrowthArgs(int length) => Length = length;
     }
     
     public bool Running { get; private set; }
