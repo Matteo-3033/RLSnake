@@ -99,7 +99,7 @@ public class SnakeGrid: MonoBehaviour {
     
     private Vector3 GetPositionAt(Vector2 coord)
     {
-        return new Vector3(StartingX + coord.x * cellSize, StartingY + coord.y * cellSize, 0);
+        return new Vector3(StartingX + coord.x * cellSize, StartingY + coord.y * cellSize, transform.position.z - 1);
     }
 
     private bool IsEmpty(Vector2 coord)
