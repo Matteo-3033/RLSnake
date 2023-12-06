@@ -6,7 +6,7 @@ public class SnakeComponent : MonoBehaviour
     [SerializeField] private GameObject componentPrefab;
     [SerializeField] protected SnakeGrid grid;
     
-    public event EventHandler<EventArgs> OnGrow;
+    public event EventHandler<EventArgs> OnGrowth;
 
     private Vector2 _lastPosition;
     private bool _appleEaten;
@@ -62,9 +62,9 @@ public class SnakeComponent : MonoBehaviour
         var part = Instantiate(componentPrefab, Vector3.zero, Quaternion.identity, transform.parent);
         var snakePart = part.GetComponent<SnakeComponent>();
         snakePart.grid = grid;
-        snakePart.OnGrow = OnGrow;
+        snakePart.OnGrowth = OnGrowth;
         PreviousSnake = snakePart;
         snakePart.InitPosition(_lastPosition);
-        OnGrow?.Invoke(this, EventArgs.Empty);
+        OnGrowth?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -61,23 +61,19 @@ public class SnakeGrid: MonoBehaviour {
         var toElement = GetElementAt(to);
         
         Debug.Log($"from {from} ({fromElement}) to {to} ({toElement})");
-        
-        SetElementAt(from, Element.None);
-        SetElementAt(to, fromElement);
-        
-        switch (toElement)
+
+        if (toElement is Element.None or Element.Apple)
         {
-            case Element.None:
-                return GetPositionAt(to);
-            case Element.Apple:
+            SetElementAt(from, Element.None);
+            SetElementAt(to, fromElement);
+            
+            if (toElement == Element.Apple)
                 OnAppleEaten?.Invoke(this, EventArgs.Empty);
-                return GetPositionAt(to);
-            case Element.Snake:
-            case Element.Void:
-            default:
-                OnCollision?.Invoke(this, EventArgs.Empty);
-                return null;
+            return GetPositionAt(to);
         }
+
+        OnCollision?.Invoke(this, EventArgs.Empty);
+        return null;
     }
 
     public Vector3 Insert(Element el, Vector2 coord)

@@ -82,7 +82,7 @@ public class RlAgent : MonoBehaviour
                 _state = nextState;
             }
             
-            epsilon = Math.Clamp(epsilon - epsilonDecay, minEpsilon, 1F);
+            epsilon = Math.Clamp(epsilon * epsilonDecay, minEpsilon, 1F);
             alpha *= alphaReductionFactor;
             _currentEpisode++;
         }
@@ -120,6 +120,13 @@ public class RlAgent : MonoBehaviour
 
     private float Q(InstanceManager.State s, SnakeHead.Direction a)
     {
+        // print state s.grid
+        foreach (var row in s.Grid)
+        {
+            foreach (var e in row)
+                Debug.Log(e);
+            Debug.Log("");
+        }
         return _qFunction[new QKey { State = s, Action = a }];
     }
 

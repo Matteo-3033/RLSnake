@@ -19,9 +19,8 @@ public class Environment : MonoBehaviour
 
     private void Start()
     {
-        instanceManager.Grid.OnCollision += OnDeath;
-        instanceManager.Grid.OnMoveOutside += OnDeath;
-        instanceManager.Grid.OnAppleEaten += SnakeGrid_OnAppleEaten;
+        instanceManager.OnGameOver += OnEpisodeFinished;
+        instanceManager.OnSnakeGrowth += OnAppleEaten;
     }
 
     public float TimeBetweenActions => instanceManager.SnakeTimeBetweenMoves;
@@ -114,12 +113,13 @@ public class Environment : MonoBehaviour
         return _nextReward;
     }
     
-    private void SnakeGrid_OnAppleEaten(object sender, EventArgs e)
+    private void OnAppleEaten(object sender, InstanceManager.OnSnakeGrowthArgs args)
     {
-        _nextReward = 2;
+        if (args.Length > 0)
+            _nextReward = 2;
     }
     
-    private void OnDeath(object sender, EventArgs e)
+    private void OnEpisodeFinished(object sender, EventArgs e)
     {
         _nextReward = -2;
     }

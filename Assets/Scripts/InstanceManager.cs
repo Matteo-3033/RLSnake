@@ -8,6 +8,19 @@ public class InstanceManager : MonoBehaviour
     [SerializeField] private SnakeGrid grid;
     [SerializeField] private bool playerControlled = true;
     
+    public event EventHandler<EventArgs> OnGameOver;
+    public event EventHandler<OnSnakeGrowthArgs> OnSnakeGrowth;
+    
+    public class OnSnakeGrowthArgs: EventArgs
+    {
+        public int Length;
+
+        public OnSnakeGrowthArgs(int length)
+        {
+            Length = length;
+        }
+    }
+    
     public bool Running { get; private set; }
     private int Score { get; set; }
     
@@ -20,9 +33,9 @@ public class InstanceManager : MonoBehaviour
     private void Start()
     {
         Score = 0;
-        grid.OnCollision += SnakeGrid_OnCollision;
-        grid.OnMoveOutside += SnakeGrid_OnMoveOutside;
-        snake.OnGrow += SnakeComponent_OnGrow;
+        grid.OnCollision += OnDeath;
+        grid.OnMoveOutside += OnDeath;
+        snake.OnGrowth += SnakeComponentOnGrowth;
     }
 
     private void Update()
@@ -31,22 +44,18 @@ public class InstanceManager : MonoBehaviour
             StartGame();
     }
 
-    private void SnakeComponent_OnGrow(object sender, EventArgs e)
+    private void SnakeComponentOnGrowth(object sender, EventArgs e)
     {
         Score += 1;
+        OnSnakeGrowth?.Invoke(this, new OnSnakeGrowthArgs(Score));
         appleGenerator.Reset();
     }
 
-    private void SnakeGrid_OnMoveOutside(object sender, EventArgs e)
+    private void OnDeath(object sender, EventArgs e)
     {
-        Debug.Log("Movement outside of border");
+        Debug.Log("Game over");
         StopGame();
-    }
-
-    private void SnakeGrid_OnCollision(object sender, EventArgs e)
-    {
-        Debug.Log("Collision");
-        StopGame();
+        OnGameOver?.Invoke(this, EventArgs.Empty);
     }
     
     public State StartGame()
@@ -59,6 +68,8 @@ public class InstanceManager : MonoBehaviour
         snake.Reset();
         
         Running = true;
+        
+        OnSnakeGrowth?.Invoke(this, new OnSnakeGrowthArgs(Score));
 
         return GetGameState();
     }
