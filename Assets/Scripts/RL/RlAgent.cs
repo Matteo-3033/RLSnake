@@ -32,7 +32,7 @@ public class RlAgent : MonoBehaviour
     private InstanceManager.State _state;
     private SnakeHead.Direction _action;
     
-    private readonly Dictionary<QKey, float> _qFunction = new (new QComparer());
+    private readonly Dictionary<StateActionKey, float> _qFunction = new (new StateActionComparer());
     private readonly Dictionary<InstanceManager.State, SnakeHead.Direction> _policy = new(new StateComparer());
 
     private readonly List<SnakeHead.Direction> _actions =
@@ -56,7 +56,7 @@ public class RlAgent : MonoBehaviour
     {
         foreach (var state in environment.States)
             foreach (var action in _actions)
-                _qFunction[new QKey { State = state, Action = action }] = 0F;
+                _qFunction[new StateActionKey { State = state, Action = action }] = 0F;
     }
 
     private IEnumerator MainLoop()
@@ -99,11 +99,9 @@ public class RlAgent : MonoBehaviour
 
     private void UpdateQ(InstanceManager.State nextState, SnakeHead.Direction nextAction, int reward)
     {
-        _qFunction[new QKey { State = _state, Action = _action }] =
+        _qFunction[new StateActionKey { State = _state, Action = _action }] =
             Q(_state, _action) * (1 - alpha) +
             alpha * (reward + gamma * Q(nextState, nextAction));
-        
-        //Debug.Log("New Q(" + _state + ", " + _action + ") = " + Q(_state, _action));
     }
 
     private SnakeHead.Direction GetRandomAction()
@@ -114,11 +112,6 @@ public class RlAgent : MonoBehaviour
     
     private SnakeHead.Direction GetMaxForState(InstanceManager.State state)
     {
-        /*
-        foreach (var a in Enum.GetValues(typeof(SnakeHead.Direction)))
-            Debug.Log("Q(" + state + ", " + (SnakeHead.Direction) a + ") = " +  Q(state, (SnakeHead.Direction) a));
-        */
-        
         return _actions
             .OrderByDescending(
                 action => Q(state, action)
@@ -128,14 +121,7 @@ public class RlAgent : MonoBehaviour
 
     private float Q(InstanceManager.State s, SnakeHead.Direction a)
     {
-        // print state s.grid
-        foreach (var row in s.Grid)
-        {
-            foreach (var e in row)
-                Debug.Log(e);
-            Debug.Log("");
-        }
-        return _qFunction[new QKey { State = s, Action = a }];
+        return _qFunction[new StateActionKey { State = s, Action = a }];
     }
 
     private SnakeHead.Direction PI(InstanceManager.State s)
@@ -149,17 +135,17 @@ public class RlAgent : MonoBehaviour
     }
 }
 
-internal record QKey
+internal record StateActionKey
 {
     public InstanceManager.State State;
     public SnakeHead.Direction Action;
 }
 
-internal class QComparer : IEqualityComparer<QKey>
+internal class StateActionComparer : IEqualityComparer<StateActionKey>
 {
     private readonly StateComparer _stateComparer = new StateComparer();
     
-    public bool Equals(QKey x, QKey y)
+    public bool Equals(StateActionKey x, StateActionKey y)
     {
         if (y == null && x == null)
             return true;
@@ -173,7 +159,7 @@ internal class QComparer : IEqualityComparer<QKey>
         return _stateComparer.Equals(x.State, y.State);
     }
 
-    public int GetHashCode(QKey obj)
+    public int GetHashCode(StateActionKey obj)
     {
         return _stateComparer.GetHashCode(obj.State) * 23 + (int)obj.Action;
     }
