@@ -13,12 +13,12 @@ public class SnakeGrid: MonoBehaviour {
     [SerializeField] private float cellSize;
     [SerializeField] private GameObject cellPrefab; 
 
-    private float _startingY;
-    private float _startingX;
-
     public int Width => width;
     public int Height => height;
     private Element[][] _grid;
+    
+    private float StartingX => transform.position.x - cellSize * width / 2 + cellSize / 2;
+    private float StartingY => transform.position.y - cellSize * height / 2 + cellSize / 2;
     
     public enum Element
     {
@@ -31,8 +31,6 @@ public class SnakeGrid: MonoBehaviour {
     private void Awake()
     {
         var pos = transform.position;
-        _startingX = pos.x - cellSize * width / 2 + cellSize / 2;
-        _startingY = pos.y - cellSize * height / 2 + cellSize / 2;
         _grid = new Element[height][];
 
         for (var y = 0; y < _grid.Length; y++)
@@ -40,7 +38,7 @@ public class SnakeGrid: MonoBehaviour {
             _grid[y] = new Element[width];
             for (var x = 0; x < _grid[y].Length; x++)
             {
-                var position = new Vector3(_startingX + x * cellSize, _startingY + y * cellSize, pos.z);
+                var position = new Vector3(StartingX + x * cellSize, StartingY + y * cellSize, pos.z);
                 var cell = Instantiate(cellPrefab, position, Quaternion.identity, transform);
                 cell.name = $"Cell ({x}, {y})";
             }
@@ -105,7 +103,7 @@ public class SnakeGrid: MonoBehaviour {
     
     private Vector3 GetPositionAt(Vector2 coord)
     {
-        return new Vector3(_startingX + coord.x * cellSize, _startingY + coord.y * cellSize, 0);
+        return new Vector3(StartingX + coord.x * cellSize, StartingY + coord.y * cellSize, 0);
     }
 
     private bool IsEmpty(Vector2 coord)
