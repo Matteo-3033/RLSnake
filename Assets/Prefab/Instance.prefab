@@ -297,7 +297,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4062821741832925753}
-  - component: {fileID: 3566503839312871517}
   m_Layer: 0
   m_Name: Agent
   m_TagString: Untagged
@@ -320,26 +319,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2186880584896818913}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3566503839312871517
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4902409498768409320}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8448c10765ab9fe48a4561b5ab72ae15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  environment: {fileID: 7556325958828533750}
-  alpha: 0.9
-  alphaReductionFactor: 0.9999
-  epsilon: 0.9
-  epsilonDecay: 0.99
-  minEpsilon: 0.01
-  gamma: 0.9
-  epochs: 1000
 --- !u!1 &5348299838736035804
 GameObject:
   m_ObjectHideFlags: 0

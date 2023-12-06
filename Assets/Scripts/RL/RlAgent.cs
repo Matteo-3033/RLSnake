@@ -5,20 +5,20 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class RlAgent : MonoBehaviour
+public abstract class RlAgent : MonoBehaviour
 {
     [SerializeField] private Environment environment;
     
-    [SerializeField] private float alpha = 0.9F;
+    [SerializeField] protected float alpha = 0.9F;
     [SerializeField] private float alphaReductionFactor = 0.9999F;
     
-    [SerializeField] private float epsilon = 0.9F;
+    [SerializeField] protected float epsilon = 0.5F;
     [SerializeField] private float epsilonDecay = 0.001F;
     [SerializeField] private float minEpsilon = 0.05F;
     
-    [SerializeField] private float gamma = 0.9F;
+    [SerializeField] protected float gamma = 0.9F;
     
-    [SerializeField] private int epochs = 1000;
+    [SerializeField] private int epochs = 10000;
     
     public event EventHandler<OnEpochFinishedArgs> OnEpochFinished;
     public class OnEpochFinishedArgs: EventArgs
@@ -32,7 +32,7 @@ public class RlAgent : MonoBehaviour
     private InstanceManager.State _state;
     private SnakeHead.Direction _action;
     
-    private readonly Dictionary<StateActionKey, float> _qFunction = new (new StateActionComparer());
+    private readonly Dictionary<StateAction, float> _qFunction = new (new StateActionComparer());
     private readonly Dictionary<InstanceManager.State, SnakeHead.Direction> _policy = new(new StateComparer());
 
     private readonly List<SnakeHead.Direction> _actions =
@@ -56,7 +56,7 @@ public class RlAgent : MonoBehaviour
     {
         foreach (var state in environment.States)
             foreach (var action in _actions)
-                _qFunction[new StateActionKey { State = state, Action = action }] = 0F;
+                _qFunction[new StateAction { State = state, Action = action }] = 0F;
     }
 
     private IEnumerator MainLoop()
@@ -80,11 +80,8 @@ public class RlAgent : MonoBehaviour
                 var nextState = environment.GetState();
                 var reward = environment.GetReward();
                 Debug.Log("Reward: " + reward);
-
-                var nextAction = GetMaxForState(nextState);
-                _policy[nextState] = nextAction;
                 
-                UpdateQ(nextState, nextAction, reward);
+                RlAlgorithm(_state, _action, reward, nextState);
 
                 _state = nextState;
             }
@@ -96,12 +93,17 @@ public class RlAgent : MonoBehaviour
         }
         // ReSharper disable once IteratorNeverReturns
     }
+    
+    protected abstract void RlAlgorithm(InstanceManager.State state, SnakeHead.Direction action, int reward, InstanceManager.State nextState);
 
-    private void UpdateQ(InstanceManager.State nextState, SnakeHead.Direction nextAction, int reward)
+    protected void UpdatePolicy(InstanceManager.State state, SnakeHead.Direction action)
     {
-        _qFunction[new StateActionKey { State = _state, Action = _action }] =
-            Q(_state, _action) * (1 - alpha) +
-            alpha * (reward + gamma * Q(nextState, nextAction));
+        _policy[state] = action;
+    }
+
+    protected void UpdateQ(InstanceManager.State state, SnakeHead.Direction action, float expectedReward)
+    {
+        _qFunction[new StateAction { State = state, Action = action }] = expectedReward;
     }
 
     private SnakeHead.Direction GetRandomAction()
@@ -110,7 +112,7 @@ public class RlAgent : MonoBehaviour
         return _actions[actionIndex];
     }
     
-    private SnakeHead.Direction GetMaxForState(InstanceManager.State state)
+    protected SnakeHead.Direction GetMaxForState(InstanceManager.State state)
     {
         return _actions
             .OrderByDescending(
@@ -119,12 +121,12 @@ public class RlAgent : MonoBehaviour
             .FirstOrDefault();
     }
 
-    private float Q(InstanceManager.State s, SnakeHead.Direction a)
+    protected float Q(InstanceManager.State s, SnakeHead.Direction a)
     {
-        return _qFunction[new StateActionKey { State = s, Action = a }];
+        return _qFunction[new StateAction { State = s, Action = a }];
     }
 
-    private SnakeHead.Direction PI(InstanceManager.State s)
+    protected SnakeHead.Direction PI(InstanceManager.State s)
     {
         var action = _policy[s];
         
@@ -135,17 +137,17 @@ public class RlAgent : MonoBehaviour
     }
 }
 
-internal record StateActionKey
+internal record StateAction
 {
     public InstanceManager.State State;
     public SnakeHead.Direction Action;
 }
 
-internal class StateActionComparer : IEqualityComparer<StateActionKey>
+internal class StateActionComparer : IEqualityComparer<StateAction>
 {
     private readonly StateComparer _stateComparer = new StateComparer();
     
-    public bool Equals(StateActionKey x, StateActionKey y)
+    public bool Equals(StateAction x, StateAction y)
     {
         if (y == null && x == null)
             return true;
@@ -159,7 +161,7 @@ internal class StateActionComparer : IEqualityComparer<StateActionKey>
         return _stateComparer.Equals(x.State, y.State);
     }
 
-    public int GetHashCode(StateActionKey obj)
+    public int GetHashCode(StateAction obj)
     {
         return _stateComparer.GetHashCode(obj.State) * 23 + (int)obj.Action;
     }
