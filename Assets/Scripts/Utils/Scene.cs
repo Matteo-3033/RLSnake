@@ -1,5 +1,5 @@
 ﻿public enum Scene
 {
-    GameScene,
+    TrainScene,
     MenuScene
 }

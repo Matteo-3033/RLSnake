@@ -9,7 +9,7 @@ public class TdLambdaRlAgent : RlAgent
     
     private readonly List<StateAction> _trace = new();
     
-    protected override string Name => "td" + lambda.ToString(CultureInfo.InvariantCulture).Replace("0.", "");
+    protected override string Name => "tdLambda";
 
     protected override void RlAlgorithm(InstanceManager.State state, SnakeHead.Direction action, int reward, InstanceManager.State nextState)
     {
@@ -40,9 +40,16 @@ public class TdLambdaRlAgent : RlAgent
         if (zeroing) _trace.Clear();
     }
     
-    protected override JsonModel GetJson()
+    protected override string GetJson()
     {
-        return new TdLambdaJsonModel(this);
+        return JsonUtility.ToJson(new TdLambdaJsonModel(this), true);
+    }
+
+    protected override JsonModel ParseJson(string json)
+    {
+        var jsonData = JsonUtility.FromJson<TdLambdaJsonModel>(json);
+        lambda = jsonData.lambda;
+        return jsonData;
     }
 
     [Serializable]

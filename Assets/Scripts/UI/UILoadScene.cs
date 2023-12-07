@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class UILoadScene : UILoadingButton
 {
-    [SerializeField] private Scene scene;
+    [SerializeField] protected Scene scene;
 
     protected override Task GetTask()
     {

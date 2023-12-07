@@ -7,6 +7,11 @@ public class Environment : MonoBehaviour
     [SerializeField] private InstanceManager instanceManager;
     [SerializeField, Range(3, int.MaxValue)] private int squareSize = 3;
     
+    [SerializeField] private int correctDirectionReward = 1;
+    [SerializeField] private int wrongDirectionReward = -1;
+    [SerializeField] private int appleEatenReward = 2;
+    [SerializeField] private int gameOverReward = -10;
+    
     private int _nextReward;
     public readonly List<InstanceManager.State> States = new();
 
@@ -97,9 +102,9 @@ public class Environment : MonoBehaviour
             case SnakeHead.Direction.Down when appleDirection is InstanceManager.AppleDirection.Bottom or InstanceManager.AppleDirection.BottomLeft or InstanceManager.AppleDirection.BottomRight:
             case SnakeHead.Direction.Left when appleDirection is InstanceManager.AppleDirection.Left or InstanceManager.AppleDirection.TopLeft or InstanceManager.AppleDirection.BottomLeft:
             case SnakeHead.Direction.Right when appleDirection is InstanceManager.AppleDirection.Right or InstanceManager.AppleDirection.TopRight or InstanceManager.AppleDirection.BottomRight:
-                return 1;
+                return correctDirectionReward;
             default:
-                return -1;
+                return wrongDirectionReward;
         }
     }
 
@@ -116,12 +121,12 @@ public class Environment : MonoBehaviour
     private void OnAppleEaten(object sender, InstanceManager.OnSnakeGrowthArgs args)
     {
         if (args.Length > 0)
-            _nextReward = 2;
+            _nextReward = appleEatenReward;
     }
     
     private void OnGameOver(object sender, EventArgs e)
     {
-        _nextReward = -2;
+        _nextReward = gameOverReward;
     }
 
     public bool IsEpisodeFinished()

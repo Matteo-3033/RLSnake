@@ -31,12 +31,12 @@ public abstract class UILoadingButton : MonoBehaviour
 
     protected abstract Task GetTask();
 
-    protected void ShowLoading()
+    private void ShowLoading()
     {
         StartCoroutine(nameof(AnimateText));
     }
 
-    protected void HideLoading()
+    private void HideLoading()
     {
         _loading = false;
     }

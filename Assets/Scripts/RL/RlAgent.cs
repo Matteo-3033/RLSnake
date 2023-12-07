@@ -10,15 +10,17 @@ using Random = UnityEngine.Random;
 
 public abstract class RlAgent : MonoBehaviour
 {
+    public static bool WithModel;
+    
     [SerializeField] private Environment environment;
     
     [SerializeField] private float alpha = 0.9F;
     protected float Alpha;
     [SerializeField] private float alphaReductionFactor = 0.9999F;
     
-    [SerializeField] private float epsilon = 0.5F;
+    [SerializeField] private float epsilon = 0.2F;
     private float _epsilon;
-    [SerializeField] private float epsilonDecay = 0.9999F;
+    [SerializeField] private float epsilonDecay = 0.99F;
     [SerializeField] private float minEpsilon = 0.05F;
     
     [SerializeField] protected float gamma = 0.9F;
@@ -44,9 +46,15 @@ public abstract class RlAgent : MonoBehaviour
     {
         Alpha = alpha;
         _epsilon = epsilon;
-        
-        InitPI();
-        InitQ();
+
+        Debug.Log("With model: " + WithModel);
+        if (WithModel)
+            LoadModel();
+        else
+        {
+            InitPI();
+            InitQ();
+        }
         
         StartCoroutine(nameof(MainLoop));
     }
@@ -97,6 +105,8 @@ public abstract class RlAgent : MonoBehaviour
             Alpha *= alphaReductionFactor;
             currentEpoch++;
             OnEpochFinished?.Invoke(this, new OnEpochFinishedArgs(currentEpoch));
+            if (currentEpoch % 250 == 0)
+                SaveModel();
         }
         // ReSharper disable once IteratorNeverReturns
     }
@@ -145,9 +155,8 @@ public abstract class RlAgent : MonoBehaviour
 
     public Task SaveModel()
     {
-        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
         //var filename = Application.persistentDataPath + $"/{Name}_{timestamp}.json";
-        var filename = $"{Name}_{timestamp}.json";
+        var filename = $"{Name}.json";
         
         return Task.Run(() =>
         {
@@ -155,10 +164,7 @@ public abstract class RlAgent : MonoBehaviour
             {
                 Debug.Log($"Saving model to {filename}");
 
-                var jsonData = GetJson();
-                var json = JsonUtility.ToJson(jsonData, true);
-
-                File.WriteAllText(filename, json);
+                File.WriteAllText(filename, GetJson());
                 Debug.Log("Saved");
             }
             catch (Exception e)
@@ -167,19 +173,52 @@ public abstract class RlAgent : MonoBehaviour
             }
         });
     }
-
-    protected virtual JsonModel GetJson()
+    
+    private void LoadModel()
     {
-        return new JsonModel(this);
+        var filename = $"{Name}.json";
+        
+        var json = File.ReadAllText(filename);
+        var jsonData = ParseJson(json);
+        
+        alpha = jsonData.alpha;
+        Alpha = jsonData.currentAlpha;
+        alphaReductionFactor = jsonData.alphaReductionFactor;
+        epsilon = jsonData.epsilon;
+        _epsilon = jsonData.currentEpsilon;
+        epsilonDecay = jsonData.epsilonDecay;
+        minEpsilon = jsonData.minEpsilon;
+        gamma = jsonData.gamma;
+        epochs = jsonData.epochs;
+
+        var cnt = 0;
+        foreach (var state in environment.States)
+        {
+            foreach (var action in _actions)
+                _qFunction[new StateAction { state = state, action = action }] = jsonData.q[cnt++];
+            _policy[state] = GetMaxForState(state);
+        }
+    }
+
+    protected virtual JsonModel ParseJson(string json)
+    {
+        return JsonUtility.FromJson<JsonModel>(json);
+    }
+
+    protected virtual string GetJson()
+    {
+        return JsonUtility.ToJson(new JsonModel(this), true);
     }
 
     [Serializable]
     public class JsonModel
     {
         public float alpha;
+        public float currentAlpha;
         public float alphaReductionFactor;
 
         public float epsilon;
+        public float currentEpsilon;
         public float epsilonDecay;
         public float minEpsilon;
 
@@ -192,11 +231,16 @@ public abstract class RlAgent : MonoBehaviour
         public JsonModel(RlAgent agent)
         {
             alpha = agent.alpha;
+            currentAlpha = agent.Alpha;
             alphaReductionFactor = agent.alphaReductionFactor;
+            
             epsilon = agent.epsilon;
+            currentEpsilon = agent._epsilon;
             epsilonDecay = agent.epsilonDecay;
             minEpsilon = agent.minEpsilon;
+            
             gamma = agent.gamma;
+            
             epochs = agent.epochs;
 
             q = new List<float>();

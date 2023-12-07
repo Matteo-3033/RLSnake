@@ -25,7 +25,6 @@ public class SnakeGrid: MonoBehaviour {
     {
         Snake,
         Apple,
-        Void,
         None
     }
     
@@ -146,7 +145,7 @@ public class SnakeGrid: MonoBehaviour {
                 var x = (int)center.x + j - offset;
 
                 if (y < 0 || y >= _grid.Length || x < 0 || x >= _grid[y].Length)
-                    res[i][j] = Element.Void;
+                    res[i][j] = Element.Snake;
                 else res[i][j] = _grid[y][x];    // == Element.Snake ? Element.Snake : Element.None;
             }
         }
