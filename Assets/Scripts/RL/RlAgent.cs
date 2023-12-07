@@ -18,7 +18,7 @@ public abstract class RlAgent : MonoBehaviour
     
     [SerializeField] private float epsilon = 0.5F;
     private float _epsilon;
-    [SerializeField] private float epsilonDecay = 0.001F;
+    [SerializeField] private float epsilonDecay = 0.9999F;
     [SerializeField] private float minEpsilon = 0.05F;
     
     [SerializeField] protected float gamma = 0.9F;
