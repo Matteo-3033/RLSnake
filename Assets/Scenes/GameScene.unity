@@ -1329,10 +1329,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 230677ef5bfbf80489b430585c96f9ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  buttonText: {fileID: 17738431}
   agents:
   - {fileID: 1035410929}
   - {fileID: 1448435003}
-  buttonText: {fileID: 17738431}
 --- !u!114 &1010019605
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1436,7 +1436,7 @@ MonoBehaviour:
   alpha: 0.9
   alphaReductionFactor: 0.9999
   epsilon: 0.5
-  epsilonDecay: 0.001
+  epsilonDecay: 0.9999
   minEpsilon: 0.05
   gamma: 0.9
   epochs: 10000
@@ -1801,7 +1801,7 @@ MonoBehaviour:
   alpha: 0.9
   alphaReductionFactor: 0.9999
   epsilon: 0.5
-  epsilonDecay: 0.001
+  epsilonDecay: 0.9999
   minEpsilon: 0.05
   gamma: 0.9
   epochs: 10000
@@ -2480,6 +2480,10 @@ PrefabInstance:
     - target: {fileID: 8232083729673949852, guid: bc5e39cf9e97fa34e9ba7d8ee48f80a3, type: 3}
       propertyPath: m_Name
       value: InstanceTD0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8232083729673949852, guid: bc5e39cf9e97fa34e9ba7d8ee48f80a3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

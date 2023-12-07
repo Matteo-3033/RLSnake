@@ -78,10 +78,10 @@ public class InstanceManager : MonoBehaviour
         snake.Stop();
     }
 
-    public void ChangeDirection(SnakeHead.Direction direction)
+    public bool ChangeDirection(SnakeHead.Direction direction)
     {
-        if (playerControlled) return;
-        snake.ChangeDirection(direction);
+        if (playerControlled) return false;
+        return snake.ChangeDirection(direction);
     }
 
     public State GetGameState(int squareSize = 3)

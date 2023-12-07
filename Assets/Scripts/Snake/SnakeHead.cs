@@ -39,7 +39,7 @@ public class SnakeHead : SnakeComponent
             ChangeDirection(Direction.Right);
     }
 
-    public void ChangeDirection(Direction direction)
+    public bool ChangeDirection(Direction direction)
     {
         switch (direction)
         {
@@ -48,8 +48,9 @@ public class SnakeHead : SnakeComponent
             case Direction.Left when _lastDirection != Direction.Right:
             case Direction.Right when _lastDirection != Direction.Left:
                 _direction = direction;
-                break;
+                return true;
         }
+        return false;
     }
     
     private IEnumerator UpdatePosition()
