@@ -20,6 +20,7 @@ public class SnakeGrid: MonoBehaviour {
     private float StartingX => transform.position.x - cellSize * width / 2 + cellSize / 2;
     private float StartingY => transform.position.y - cellSize * height / 2 + cellSize / 2;
     
+    [Serializable]
     public enum Element
     {
         Snake,

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +10,7 @@ public class SnakeHead : SnakeComponent
     
     [Range(0.0001F, 1)] public float timeBetweenMoves = 0.5F;
 
+    [Serializable]
     public enum Direction
     {
         Left,

@@ -31,7 +31,7 @@ public class Environment : MonoBehaviour
         for (var d = InstanceManager.AppleDirection.Left; d <= InstanceManager.AppleDirection.BottomRight; d++)
             foreach (var grid in grids)
                 States.Add(new InstanceManager.State {
-                    AppleDirection = d,
+                    appleDirection = d,
                     Grid = grid
                 });
     }

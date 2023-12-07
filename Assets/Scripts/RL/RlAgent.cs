@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -9,16 +12,20 @@ public abstract class RlAgent : MonoBehaviour
 {
     [SerializeField] private Environment environment;
     
-    [SerializeField] protected float alpha = 0.9F;
+    [SerializeField] private float alpha = 0.9F;
+    protected float Alpha;
     [SerializeField] private float alphaReductionFactor = 0.9999F;
     
-    [SerializeField] protected float epsilon = 0.5F;
+    [SerializeField] private float epsilon = 0.5F;
+    private float _epsilon;
     [SerializeField] private float epsilonDecay = 0.001F;
     [SerializeField] private float minEpsilon = 0.05F;
     
     [SerializeField] protected float gamma = 0.9F;
     
     [SerializeField] private int epochs = 10000;
+    
+    protected abstract string Name { get; }
     
     public event EventHandler<OnEpochFinishedArgs> OnEpochFinished;
     public class OnEpochFinishedArgs: EventArgs
@@ -40,6 +47,9 @@ public abstract class RlAgent : MonoBehaviour
 
     private void Start()
     {
+        Alpha = alpha;
+        _epsilon = epsilon;
+        
         InitPI();
         InitQ();
         
@@ -56,7 +66,7 @@ public abstract class RlAgent : MonoBehaviour
     {
         foreach (var state in environment.States)
             foreach (var action in _actions)
-                _qFunction[new StateAction { State = state, Action = action }] = 0F;
+                _qFunction[new StateAction { state = state, action = action }] = 0F;
     }
 
     private IEnumerator MainLoop()
@@ -87,7 +97,7 @@ public abstract class RlAgent : MonoBehaviour
             }
             
             epsilon = Math.Clamp(epsilon * epsilonDecay, minEpsilon, 1F);
-            alpha *= alphaReductionFactor;
+            Alpha *= alphaReductionFactor;
             _currentEpoch++;
             OnEpochFinished?.Invoke(this, new OnEpochFinishedArgs(_currentEpoch));
         }
@@ -103,7 +113,7 @@ public abstract class RlAgent : MonoBehaviour
 
     protected void UpdateQ(InstanceManager.State state, SnakeHead.Direction action, float expectedReward)
     {
-        _qFunction[new StateAction { State = state, Action = action }] = expectedReward;
+        _qFunction[new StateAction { state = state, action = action }] = expectedReward;
     }
 
     private SnakeHead.Direction GetRandomAction()
@@ -123,24 +133,89 @@ public abstract class RlAgent : MonoBehaviour
 
     protected float Q(InstanceManager.State s, SnakeHead.Direction a)
     {
-        return _qFunction[new StateAction { State = s, Action = a }];
+        return _qFunction[new StateAction { state = s, action = a }];
     }
 
     protected SnakeHead.Direction PI(InstanceManager.State s)
     {
         var action = _policy[s];
         
-        if (Random.Range(0F, 1F) < epsilon)
+        if (Random.Range(0F, 1F) < _epsilon)
             action = GetRandomAction();
         
         return action;
     }
+
+    public Task SaveModel()
+    {
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        //var filename = Application.persistentDataPath + $"/{Name}_{timestamp}.json";
+        var filename = $"{Name}_{timestamp}.json";
+        
+        return Task.Run(() =>
+        {
+            try
+            {
+                Debug.Log($"Saving model to {filename}");
+
+                var jsonData = GetJson();
+                var json = JsonUtility.ToJson(jsonData, true);
+
+                File.WriteAllText(filename, json);
+                Debug.Log("Saved");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.ToString());
+            }
+        });
+    }
+
+    protected virtual JsonModel GetJson()
+    {
+        return new JsonModel(this);
+    }
+
+    [Serializable]
+    public class JsonModel
+    {
+        public float alpha;
+        public float alphaReductionFactor;
+
+        public float epsilon;
+        public float epsilonDecay;
+        public float minEpsilon;
+
+        public float gamma;
+
+        public int epochs;
+
+        [Serialize] public List<float> q;
+        
+        public JsonModel(RlAgent agent)
+        {
+            alpha = agent.alpha;
+            alphaReductionFactor = agent.alphaReductionFactor;
+            epsilon = agent.epsilon;
+            epsilonDecay = agent.epsilonDecay;
+            minEpsilon = agent.minEpsilon;
+            gamma = agent.gamma;
+            epochs = agent.epochs;
+
+            q = new List<float>();
+            
+            foreach (var state in agent.environment.States)
+                foreach (var action in agent._actions)
+                    q.Add(agent.Q(state, action));
+        }
+    }
 }
 
+[Serializable]
 internal record StateAction
 {
-    public InstanceManager.State State;
-    public SnakeHead.Direction Action;
+    public InstanceManager.State state;
+    public SnakeHead.Direction action;
 }
 
 internal class StateActionComparer : IEqualityComparer<StateAction>
@@ -155,15 +230,15 @@ internal class StateActionComparer : IEqualityComparer<StateAction>
         if (x == null || y == null)
             return false;
         
-        if (x.Action != y.Action)
+        if (x.action != y.action)
             return false;
      
-        return _stateComparer.Equals(x.State, y.State);
+        return _stateComparer.Equals(x.state, y.state);
     }
 
     public int GetHashCode(StateAction obj)
     {
-        return _stateComparer.GetHashCode(obj.State) * 23 + (int)obj.Action;
+        return _stateComparer.GetHashCode(obj.state) * 23 + (int)obj.action;
     }
 }
 
@@ -180,7 +255,7 @@ internal class StateComparer : IEqualityComparer<InstanceManager.State>
         if (x.Grid.Length != y.Grid.Length || x.Grid[0].Length != y.Grid[0].Length)
             return false;
         
-        if (x.AppleDirection != y.AppleDirection)
+        if (x.appleDirection != y.appleDirection)
             return false;
         
         var xGrid = x!.Grid;
@@ -197,6 +272,6 @@ internal class StateComparer : IEqualityComparer<InstanceManager.State>
     public int GetHashCode(InstanceManager.State obj)
     {
         var grid = obj.Grid;
-        return grid.Aggregate(17, (current1, t) => t.Aggregate(current1, (current, t1) => current * 23 + (int)t1)) * 23 + (int)obj.AppleDirection;
+        return grid.Aggregate(17, (current1, t) => t.Aggregate(current1, (current, t1) => current * 23 + (int)t1)) * 23 + (int)obj.appleDirection;
     }
 }

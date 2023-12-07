@@ -88,7 +88,7 @@ public class InstanceManager : MonoBehaviour
     {
         return new State
         {
-            AppleDirection = GetAppleDirection(),
+            appleDirection = GetAppleDirection(),
             Grid = grid.GetSquareCenteredIn(snake.GridPosition, squareSize)
         };
     }
@@ -124,12 +124,14 @@ public class InstanceManager : MonoBehaviour
         return AppleDirection.Left;
     }
 
+    [Serializable]
     public record State
     {
-        public AppleDirection AppleDirection;
+        public AppleDirection appleDirection;
         public SnakeGrid.Element[][] Grid;
     }
 
+    [Serializable]
     public enum AppleDirection
     {
         Left, Right, Top, Bottom,
