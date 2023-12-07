@@ -6,7 +6,7 @@ public class Td0RlAgent : RlAgent
     {
         var nextAction = GetMaxForState(nextState);
         UpdatePolicy(nextState, nextAction);
-                
+        
         UpdateQ(
             state,
             action,

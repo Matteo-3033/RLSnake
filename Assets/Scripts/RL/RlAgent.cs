@@ -34,11 +34,6 @@ public abstract class RlAgent : MonoBehaviour
         public OnEpochFinishedArgs(int epochsCnt) => EpochsCnt = epochsCnt;
     }
     
-    private int _currentEpoch;
-    
-    private InstanceManager.State _state;
-    private SnakeHead.Direction _action;
-    
     private readonly Dictionary<StateAction, float> _qFunction = new (new StateActionComparer());
     private readonly Dictionary<InstanceManager.State, SnakeHead.Direction> _policy = new(new StateComparer());
 
@@ -59,52 +54,69 @@ public abstract class RlAgent : MonoBehaviour
     private void InitPI()
     {
         foreach (var state in environment.States)
-            _policy[state] = GetRandomAction();
+            UpdatePolicy(state, GetRandomAction());
     }
     
     private void InitQ()
     {
         foreach (var state in environment.States)
             foreach (var action in _actions)
-                _qFunction[new StateAction { state = state, action = action }] = 0F;
+                UpdateQ(state, action, 0F);
     }
 
     private IEnumerator MainLoop()
     {
         Debug.Log("Starting training");
+        
+        var currentEpoch = 0;
         while (true)
         {
-            if (_currentEpoch >= epochs) continue;
+            if (currentEpoch >= epochs) continue;
             
-            _state = environment.ResetEnvironment();
+            var state = environment.ResetEnvironment();
             while (!environment.IsEpisodeFinished())
             {
-                _action = PI(_state);
-                environment.MakeAction(_action);
+                var action = PI(state);
+                environment.MakeAction(action);
 
                 yield return new WaitForSeconds(environment.TimeBetweenActions);
 
-                Debug.Log("State: " + _state);
-                Debug.Log("Action done: " + _action);
+                Debug.Log("State: " + state);
+                Debug.Log("Action done: " + action);
                 
                 var nextState = environment.GetState();
                 var reward = environment.GetReward();
                 Debug.Log("Reward: " + reward);
                 
-                RlAlgorithm(_state, _action, reward, nextState);
+                RlAlgorithm(state, action, reward, nextState);
 
-                _state = nextState;
+                state = nextState;
             }
             
             epsilon = Math.Clamp(epsilon * epsilonDecay, minEpsilon, 1F);
             Alpha *= alphaReductionFactor;
-            _currentEpoch++;
-            OnEpochFinished?.Invoke(this, new OnEpochFinishedArgs(_currentEpoch));
+            currentEpoch++;
+            OnEpochFinished?.Invoke(this, new OnEpochFinishedArgs(currentEpoch));
         }
         // ReSharper disable once IteratorNeverReturns
     }
     
     protected abstract void RlAlgorithm(InstanceManager.State state, SnakeHead.Direction action, int reward, InstanceManager.State nextState);
+
+    protected SnakeHead.Direction PI(InstanceManager.State s)
+    {
+        var action = _policy[s];
+        
+        if (Random.Range(0F, 1F) < _epsilon)
+            return GetRandomAction();
+        
+        return action;
+    }
+    
+    protected float Q(InstanceManager.State s, SnakeHead.Direction a)
+    {
+        return _qFunction[new StateAction { state = s, action = a }];
+    }
 
     protected void UpdatePolicy(InstanceManager.State state, SnakeHead.Direction action)
     {
@@ -129,21 +141,6 @@ public abstract class RlAgent : MonoBehaviour
                 action => Q(state, action)
             )
             .FirstOrDefault();
-    }
-
-    protected float Q(InstanceManager.State s, SnakeHead.Direction a)
-    {
-        return _qFunction[new StateAction { state = s, action = a }];
-    }
-
-    protected SnakeHead.Direction PI(InstanceManager.State s)
-    {
-        var action = _policy[s];
-        
-        if (Random.Range(0F, 1F) < _epsilon)
-            action = GetRandomAction();
-        
-        return action;
     }
 
     public Task SaveModel()
