@@ -93,7 +93,7 @@ public abstract class RlAgent : MonoBehaviour
                 state = nextState;
             }
             
-            epsilon = Math.Clamp(epsilon * epsilonDecay, minEpsilon, 1F);
+            _epsilon = Math.Clamp(_epsilon * epsilonDecay, minEpsilon, 1F);
             Alpha *= alphaReductionFactor;
             currentEpoch++;
             OnEpochFinished?.Invoke(this, new OnEpochFinishedArgs(currentEpoch));
