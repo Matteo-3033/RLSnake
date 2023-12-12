@@ -10,8 +10,6 @@ using Random = UnityEngine.Random;
 
 public abstract class RlAgent : MonoBehaviour
 {
-    public static bool WithModel;
-    
     [SerializeField] private Environment environment;
     
     [SerializeField] private float alpha = 0.9F;
@@ -24,8 +22,6 @@ public abstract class RlAgent : MonoBehaviour
     [SerializeField] private float minEpsilon = 0.05F;
     
     [SerializeField] protected float gamma = 0.9F;
-    
-    [SerializeField] private int epochs = 10000;
     
     protected abstract string ModelFileName { get; }
     
@@ -44,18 +40,28 @@ public abstract class RlAgent : MonoBehaviour
 
     private void Start()
     {
+        if (Settings.UseModels)
+            LoadModel();
+        else Init();
+            
+        StartCoroutine(nameof(MainLoop));
+    }
+
+    private void Init()
+    {
+        InitPI();
+        InitQ();
+        InitParameters();
+    }
+
+    protected virtual void InitParameters()
+    {
+        alpha = Settings.Alpha;
+        gamma = Settings.Gamma;
+        epsilon = Settings.Epsilon;
+        
         Alpha = alpha;
         _epsilon = epsilon;
-
-        if (WithModel)
-            LoadModel();
-        else
-        {
-            InitPI();
-            InitQ();
-        }
-        
-        StartCoroutine(nameof(MainLoop));
     }
 
     private void InitPI()
@@ -78,8 +84,6 @@ public abstract class RlAgent : MonoBehaviour
         var currentEpoch = 0;
         while (true)
         {
-            if (currentEpoch >= epochs) continue;
-            
             var state = environment.ResetEnvironment();
             while (!environment.IsEpisodeFinished())
             {
@@ -185,7 +189,6 @@ public abstract class RlAgent : MonoBehaviour
         epsilonDecay = jsonData.epsilonDecay;
         minEpsilon = jsonData.minEpsilon;
         gamma = jsonData.gamma;
-        epochs = jsonData.epochs;
 
         var cnt = 0;
         foreach (var state in environment.States)
@@ -236,8 +239,6 @@ public abstract class RlAgent : MonoBehaviour
             minEpsilon = agent.minEpsilon;
             
             gamma = agent.gamma;
-            
-            epochs = agent.epochs;
 
             q = new List<float>();
             

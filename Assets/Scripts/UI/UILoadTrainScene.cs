@@ -1,14 +1,13 @@
 ﻿using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class UILoadTrainScene : UILoadScene
 {
-    [SerializeField] private bool withModel;
+    [SerializeField] private bool useModels;
     
     protected override Task GetTask()
     {
-        RlAgent.WithModel = withModel;
+        Settings.UseModels = useModels;
         return base.GetTask();
     }
 }

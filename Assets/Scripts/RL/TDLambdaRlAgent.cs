@@ -38,7 +38,13 @@ public class TdLambdaRlAgent : RlAgent
 
         if (zeroing) _trace.Clear();
     }
-    
+
+    protected override void InitParameters()
+    {
+        base.InitParameters();
+        lambda = Settings.Lambda;
+    }
+
     protected override string GetJson()
     {
         return JsonUtility.ToJson(new TdLambdaJsonModel(this), true);

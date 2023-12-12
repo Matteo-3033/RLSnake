@@ -30,6 +30,9 @@ public class SnakeGrid: MonoBehaviour {
     
     private void Awake()
     {
+        height = Settings.GridRows;
+        width = Settings.GridColumns;
+        
         var pos = transform.position;
         _grid = new Element[height][];
 
