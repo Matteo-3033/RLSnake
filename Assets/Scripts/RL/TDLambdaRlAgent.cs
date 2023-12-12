@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using UnityEngine;
 
 public class TdLambdaRlAgent : RlAgent
@@ -9,7 +8,7 @@ public class TdLambdaRlAgent : RlAgent
     
     private readonly List<StateAction> _trace = new();
     
-    protected override string Name => "tdLambda";
+    protected override string ModelFileName => "tdLambda.json";
 
     protected override void RlAlgorithm(InstanceManager.State state, SnakeHead.Direction action, int reward, InstanceManager.State nextState)
     {

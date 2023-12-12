@@ -2,13 +2,11 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class UILoadGameScene : UILoadScene
+public class UILoadPlayScene : UILoadScene
 {
-    [SerializeField] private bool withModel;
-    
     protected override Task GetTask()
     {
-        RlAgent.WithModel = withModel;
+        PlayingAgent.ModelFileName = "tdLambda.json";
         return base.GetTask();
     }
 }

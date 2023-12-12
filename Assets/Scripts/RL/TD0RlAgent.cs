@@ -1,6 +1,6 @@
 public class Td0RlAgent : RlAgent
 {
-    protected override string Name => "td0";
+    protected override string ModelFileName => "td0.json";
 
     protected override void RlAlgorithm(InstanceManager.State state, SnakeHead.Direction action, int reward, InstanceManager.State nextState)
     {

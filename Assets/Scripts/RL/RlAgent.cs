@@ -27,7 +27,7 @@ public abstract class RlAgent : MonoBehaviour
     
     [SerializeField] private int epochs = 10000;
     
-    protected abstract string Name { get; }
+    protected abstract string ModelFileName { get; }
     
     public event EventHandler<OnEpochFinishedArgs> OnEpochFinished;
     public class OnEpochFinishedArgs: EventArgs
@@ -47,7 +47,6 @@ public abstract class RlAgent : MonoBehaviour
         Alpha = alpha;
         _epsilon = epsilon;
 
-        Debug.Log("With model: " + WithModel);
         if (WithModel)
             LoadModel();
         else
@@ -156,15 +155,14 @@ public abstract class RlAgent : MonoBehaviour
     public Task SaveModel()
     {
         //var filename = Application.persistentDataPath + $"/{Name}_{timestamp}.json";
-        var filename = $"{Name}.json";
         
         return Task.Run(() =>
         {
             try
             {
-                Debug.Log($"Saving model to {filename}");
+                Debug.Log($"Saving model to {ModelFileName}");
 
-                File.WriteAllText(filename, GetJson());
+                File.WriteAllText(ModelFileName, GetJson());
                 Debug.Log("Saved");
             }
             catch (Exception e)
@@ -176,9 +174,7 @@ public abstract class RlAgent : MonoBehaviour
     
     private void LoadModel()
     {
-        var filename = $"{Name}.json";
-        
-        var json = File.ReadAllText(filename);
+        var json = File.ReadAllText(ModelFileName);
         var jsonData = ParseJson(json);
         
         alpha = jsonData.alpha;
