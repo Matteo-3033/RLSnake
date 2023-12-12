@@ -5,12 +5,12 @@ using System.IO;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class PlayingAgent : MonoBehaviour
 {
-    public static string ModelFileName = "tdLambda.json";
-    
+    [SerializeField] private string modelFileName;
     [SerializeField] private Environment environment;
 
     private InstanceManager.State _state;
@@ -46,7 +46,7 @@ public class PlayingAgent : MonoBehaviour
 
     private void LoadModel()
     {
-        var json = File.ReadAllText(ModelFileName);
+        var json = File.ReadAllText(modelFileName);
         var jsonData = JsonUtility.FromJson<RlAgent.JsonModel>(json);
 
         var cnt = 0; 
