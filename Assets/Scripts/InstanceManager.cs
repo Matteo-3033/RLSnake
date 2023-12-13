@@ -95,6 +95,11 @@ public class InstanceManager : MonoBehaviour
             bottom = grid.GetElementAt(snake.GridPosition + Vector2.down)
         };
     }
+    
+    public bool IsValidDirection(SnakeHead.Direction direction)
+    {
+        return snake.IsValidDirection(direction);
+    }
 
     public AppleDirection GetAppleDirection()
     {

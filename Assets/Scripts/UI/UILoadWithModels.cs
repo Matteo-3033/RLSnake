@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using UnityEngine;
 
-public class UILoadTrainScene : UILoadScene
+public class UILoadWithModels : UILoadScene
 {
     [SerializeField] private bool useModels;
     

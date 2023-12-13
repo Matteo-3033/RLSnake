@@ -41,16 +41,23 @@ public class SnakeHead : SnakeComponent
 
     public bool ChangeDirection(Direction direction)
     {
+        if (!IsValidDirection(direction)) return false;
+        
+        _direction = direction;
+        return true;
+    }
+    
+    public bool IsValidDirection(Direction direction)
+    {
         switch (direction)
         {
-            case Direction.Up when _lastDirection != Direction.Down:
-            case Direction.Down when _lastDirection != Direction.Up:
-            case Direction.Left when _lastDirection != Direction.Right:
-            case Direction.Right when _lastDirection != Direction.Left:
-                _direction = direction;
-                return true;
+            case Direction.Up when _lastDirection == Direction.Down:
+            case Direction.Down when _lastDirection == Direction.Up:
+            case Direction.Left when _lastDirection == Direction.Right:
+            case Direction.Right when _lastDirection == Direction.Left:
+                return false;
         }
-        return false;
+        return true;
     }
     
     private IEnumerator UpdatePosition()

@@ -56,6 +56,9 @@ public class Environment : MonoBehaviour
 
     private int GetDirectionReward(SnakeHead.Direction action)
     {
+        if (!instanceManager.IsValidDirection(action))
+            return 0;
+        
         var appleDirection = instanceManager.GetAppleDirection();
         
         switch (action)
