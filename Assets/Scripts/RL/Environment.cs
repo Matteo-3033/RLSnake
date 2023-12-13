@@ -49,49 +49,6 @@ public class Environment : MonoBehaviour
                             });
     }
 
-    private List<SnakeGrid.Element[][]> GetGrids()
-    {
-        var grids = new List<SnakeGrid.Element[][]>();
-        
-        var grid = new SnakeGrid.Element[squareSize][];
-        for (var y = 0; y < grid.Length; y++)
-        {
-            grid[y] = new SnakeGrid.Element[squareSize];
-            for (var x = 0; x < grid[y].Length; x++)
-                grid[y][x] = SnakeGrid.Element.Snake;
-        }
-        
-        InitGridsRecursive(grids, grid, 0, 0);
-        return grids;
-    }
-
-    private void InitGridsRecursive(ICollection<SnakeGrid.Element[][]> grids, IReadOnlyList<SnakeGrid.Element[]> grid, int row, int col)
-    {
-        if (row == squareSize)
-        {
-            var gridCopy = new SnakeGrid.Element[squareSize][];
-            for (var y = 0; y < gridCopy.Length; y++)
-            {
-                gridCopy[y] = new SnakeGrid.Element[squareSize];
-                for (var x = 0; x < gridCopy[y].Length; x++)
-                    gridCopy[y][x] = grid[y][x];
-            }
-            grids.Add(gridCopy);
-        }
-        else
-        {
-            for (var e = SnakeGrid.Element.Snake; e <= SnakeGrid.Element.None; e++)
-            {
-                grid[row][col] = e;
-                var nextRow = col == squareSize - 1 ? row + 1 : row;
-                var nextCol = col == squareSize - 1 ? 0 : col + 1;
-                if (nextCol == squareSize / 2 && nextRow == squareSize / 2)
-                    nextCol++;
-                InitGridsRecursive(grids, grid, nextRow, nextCol);
-            }
-        }
-    }
-
     public void MakeAction(SnakeHead.Direction action)
     {
         if (IsEpisodeFinished())

@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 public abstract class RlAgent : MonoBehaviour
 {
-    [SerializeField] protected Environment environment;
+    [SerializeField] private Environment environment;
     
     [SerializeField] private float alpha = 0.9F;
     protected float Alpha;
@@ -22,7 +22,8 @@ public abstract class RlAgent : MonoBehaviour
     [SerializeField] private float minEpsilon = 0.05F;
     
     [SerializeField] protected float gamma = 0.9F;
-    
+
+    protected Environment Environment => environment;
     protected abstract string ModelFileName { get; }
     
     public event EventHandler<OnEpochFinishedArgs> OnEpochFinished;

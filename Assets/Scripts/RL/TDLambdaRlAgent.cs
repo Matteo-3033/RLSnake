@@ -27,7 +27,7 @@ public class TdLambdaRlAgent : RlAgent
         UpdateE(state, action, E(state, action) + 1);
         foreach (var a in _actions)
         {
-            foreach (var s in environment.States)
+            foreach (var s in Environment.States)
             {
                 UpdateQ(s, a, Q(s, a) + Alpha * delta * E(s, a));
                 UpdateE(s, a, zeroing ? 0F : gamma * lambda * E(s, a));
@@ -49,7 +49,7 @@ public class TdLambdaRlAgent : RlAgent
 
     private void InitE()
     {
-        foreach (var state in environment.States)
+        foreach (var state in Environment.States)
             foreach (var action in _actions)
                 _e[new StateAction(state, action)] = 0F;
     }

@@ -19,7 +19,7 @@ public class InstanceManager : MonoBehaviour
     }
     
     public bool Running { get; private set; }
-    private int Score { get; set; }
+    public int Score { get; private set; }
     
     public SnakeHead SnakeHead => snake;
     public SnakeGrid Grid => grid;

@@ -12,6 +12,7 @@ public class UISnakeLength : MonoBehaviour
     {
         _text = GetComponent<TextMeshProUGUI>();
         _baseText = _text.text;
+        SetText(GetText(0));
     }
 
     private void Start()
@@ -21,6 +22,16 @@ public class UISnakeLength : MonoBehaviour
 
     private void OnSnakeGrowth(object sender, InstanceManager.OnSnakeGrowthArgs args)
     {
-        _text.text = $"{_baseText}{args.Length}";
+        SetText(GetText(args.Length));
+    }
+
+    private void SetText(string end)
+    {
+        _text.text = $"{_baseText}{end}";
+    }
+
+    protected virtual string GetText(int length)
+    {
+        return length.ToString();
     }
 }
