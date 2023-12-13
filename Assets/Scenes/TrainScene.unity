@@ -1749,6 +1749,9 @@ MonoBehaviour:
   environment: {fileID: 1270350237}
   alpha: 0.9
   alphaReductionFactor: 0.9999
+  epsilon: 0.01
+  epsilonDecay: 0.99
+  minEpsilon: 0.01
   gamma: 0.9
 --- !u!1 &1153841363
 GameObject:
@@ -2110,6 +2113,9 @@ MonoBehaviour:
   environment: {fileID: 1491540910}
   alpha: 0.9
   alphaReductionFactor: 0.9999
+  epsilon: 0.01
+  epsilonDecay: 0.99
+  minEpsilon: 0.01
   gamma: 0.9
   lambda: 0.2
 --- !u!114 &1491540910 stripped
