@@ -16,6 +16,11 @@ public abstract class RlAgent : EpochsPlayer
     protected float Alpha;
     [SerializeField] private float alphaReductionFactor = 0.9999F;
     
+    [SerializeField] private float epsilon = 0.2F;
+    private float _epsilon;
+    [SerializeField] private float epsilonDecay = 0.99F;
+    [SerializeField] private float minEpsilon = 0.01F;
+    
     [SerializeField] protected float gamma = 0.9F;
 
     protected Environment Environment => environment;
@@ -47,8 +52,10 @@ public abstract class RlAgent : EpochsPlayer
     {
         alpha = Settings.Alpha;
         gamma = Settings.Gamma;
-       
+        epsilon = Settings.Epsilon;
+        
         Alpha = alpha;
+        _epsilon = epsilon;
     }
 
     protected virtual void InitPI()
@@ -91,6 +98,7 @@ public abstract class RlAgent : EpochsPlayer
                 state = nextState;
             }
             
+            _epsilon = Math.Clamp(_epsilon * epsilonDecay, minEpsilon, 1F);
             Alpha *= alphaReductionFactor;
             currentEpoch++;
             InvokeOnEpochFinished(new OnEpochFinishedArgs(currentEpoch));
@@ -104,7 +112,12 @@ public abstract class RlAgent : EpochsPlayer
 
     protected Environment.Action PI(InstanceManager.State s)
     {
-        return _policy[s];
+        var action = _policy[s];
+        
+        if (Random.Range(0F, 1F) < _epsilon)
+            return GetRandomAction();
+        
+        return action;
     }
     
     protected float Q(InstanceManager.State s, Environment.Action a)
@@ -165,6 +178,10 @@ public abstract class RlAgent : EpochsPlayer
         alpha = jsonData.alpha;
         Alpha = jsonData.currentAlpha;
         alphaReductionFactor = jsonData.alphaReductionFactor;
+        epsilon = jsonData.epsilon;
+        _epsilon = jsonData.currentEpsilon;
+        epsilonDecay = jsonData.epsilonDecay;
+        minEpsilon = jsonData.minEpsilon;
         gamma = jsonData.gamma;
 
         var cnt = 0;
@@ -193,6 +210,11 @@ public abstract class RlAgent : EpochsPlayer
         public float currentAlpha;
         public float alphaReductionFactor;
 
+        public float epsilon;
+        public float currentEpsilon;
+        public float epsilonDecay;
+        public float minEpsilon;
+
         public float gamma;
 
         public int epochs;
@@ -204,6 +226,11 @@ public abstract class RlAgent : EpochsPlayer
             alpha = agent.alpha;
             currentAlpha = agent.Alpha;
             alphaReductionFactor = agent.alphaReductionFactor;
+            
+            epsilon = agent.epsilon;
+            currentEpsilon = agent._epsilon;
+            epsilonDecay = agent.epsilonDecay;
+            minEpsilon = agent.minEpsilon;
             
             gamma = agent.gamma;
 
