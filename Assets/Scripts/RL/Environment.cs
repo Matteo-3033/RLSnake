@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Environment : MonoBehaviour
@@ -32,13 +33,20 @@ public class Environment : MonoBehaviour
     
     private void InitStates()
     {
-        var grids = GetGrids();
+        var elements = Enum.GetValues(typeof(SnakeGrid.Element)).Cast<SnakeGrid.Element>().ToList();
+        
         for (var d = InstanceManager.AppleDirection.Left; d <= InstanceManager.AppleDirection.BottomRight; d++)
-            foreach (var grid in grids)
-                States.Add(new InstanceManager.State {
-                    appleDirection = d,
-                    Grid = grid
-                });
+            foreach (var top in elements)
+                foreach (var bottom in elements)
+                    foreach (var left in elements)
+                        foreach (var right in elements)
+                            States.Add(new InstanceManager.State {
+                                appleDirection = d,
+                                top = top,
+                                bottom = bottom,
+                                left = left,
+                                right = right
+                            });
     }
 
     private List<SnakeGrid.Element[][]> GetGrids()

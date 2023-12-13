@@ -89,7 +89,10 @@ public class InstanceManager : MonoBehaviour
         return new State
         {
             appleDirection = GetAppleDirection(),
-            Grid = grid.GetSquareCenteredIn(snake.GridPosition, squareSize)
+            top = grid.GetElementAt(snake.GridPosition + Vector2.up),
+            left = grid.GetElementAt(snake.GridPosition + Vector2.left),
+            right = grid.GetElementAt(snake.GridPosition + Vector2.right),
+            bottom = grid.GetElementAt(snake.GridPosition + Vector2.down)
         };
     }
 
@@ -128,7 +131,10 @@ public class InstanceManager : MonoBehaviour
     public record State
     {
         public AppleDirection appleDirection;
-        public SnakeGrid.Element[][] Grid;
+        public SnakeGrid.Element top;
+        public SnakeGrid.Element left;
+        public SnakeGrid.Element right;
+        public SnakeGrid.Element bottom;
     }
 
     [Serializable]

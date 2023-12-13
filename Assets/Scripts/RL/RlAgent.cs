@@ -290,26 +290,11 @@ internal class StateComparer : IEqualityComparer<InstanceManager.State>
         if (x == null || y == null)
             return false;
         
-        if (x.Grid.Length != y.Grid.Length || x.Grid[0].Length != y.Grid[0].Length)
-            return false;
-        
-        if (x.appleDirection != y.appleDirection)
-            return false;
-        
-        var xGrid = x!.Grid;
-        var yGrid = y!.Grid;
-        
-        for (var i = 0; i < xGrid.Length; i++)
-        for (var j = 0; j < xGrid[i].Length; j++)
-            if (xGrid[i][j] != yGrid[i][j])
-                return false;
-        
-        return true;
+        return x.appleDirection == y.appleDirection && x.top == y.top && x.bottom == y.bottom && x.left == y.left && x.right == y.right;
     }
 
     public int GetHashCode(InstanceManager.State obj)
     {
-        var grid = obj.Grid;
-        return grid.Aggregate(17, (current1, t) => t.Aggregate(current1, (current, t1) => current * 23 + (int)t1)) * 23 + (int)obj.appleDirection;
+        return (int)obj.appleDirection * 23 + (int)obj.top * 17 + (int)obj.bottom * 13 + (int)obj.left * 11 + (int)obj.right * 7;
     }
 }
