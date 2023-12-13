@@ -54,7 +54,7 @@ public class SnakeGrid: MonoBehaviour {
     {
         if (from == to) return null;
         
-        if (!IsOutside(to))
+        if (IsOutside(to))
         {
             OnMoveOutside?.Invoke(this, EventArgs.Empty);
             return null;
@@ -90,9 +90,9 @@ public class SnakeGrid: MonoBehaviour {
         return GetPositionAt(coord);
     }
 
-    private Element GetElementAt(Vector2 coord)
+    public Element GetElementAt(Vector2 coord)
     {
-        return _grid[(int) coord.y][(int) coord.x];
+        return IsOutside(coord) ? Element.Snake : _grid[(int) coord.y][(int) coord.x];
     }
 
     private void SetElementAt(Vector2 coord, Element el)
@@ -112,7 +112,7 @@ public class SnakeGrid: MonoBehaviour {
 
     private bool IsOutside(Vector2 coord)
     {
-        return coord.x >= 0 && coord.x < width && coord.y >= 0 && coord.y < height;
+        return coord.x < 0 || coord.x >= width || coord.y < 0 || coord.y >= height;
     }
 
     public void Reset()
