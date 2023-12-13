@@ -6,7 +6,6 @@ using UnityEngine;
 public class Environment : MonoBehaviour
 {
     [SerializeField] private InstanceManager instanceManager;
-    [SerializeField, Range(3, int.MaxValue)] private int squareSize = 3;
     
     [SerializeField] private int correctDirectionReward = 1;
     [SerializeField] private int wrongDirectionReward = -1;
@@ -18,8 +17,6 @@ public class Environment : MonoBehaviour
 
     private void Awake()
     {
-        if (squareSize % 2 == 0)
-            throw new Exception("squareSize must be odd");
         InitStates();
     }
 
@@ -75,7 +72,7 @@ public class Environment : MonoBehaviour
 
     public InstanceManager.State GetState()
     {
-        return instanceManager.GetGameState(squareSize);
+        return instanceManager.GetGameState();
     }
 
     public int GetReward()

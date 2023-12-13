@@ -84,7 +84,7 @@ public class InstanceManager : MonoBehaviour
         return snake.ChangeDirection(direction);
     }
 
-    public State GetGameState(int squareSize = 3)
+    public State GetGameState()
     {
         return new State
         {
