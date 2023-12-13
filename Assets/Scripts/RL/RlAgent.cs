@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 public abstract class RlAgent : MonoBehaviour
 {
-    [SerializeField] private Environment environment;
+    [SerializeField] protected Environment environment;
     
     [SerializeField] private float alpha = 0.9F;
     protected float Alpha;
@@ -47,7 +47,7 @@ public abstract class RlAgent : MonoBehaviour
         StartCoroutine(nameof(MainLoop));
     }
 
-    private void Init()
+    protected virtual void Init()
     {
         InitPI();
         InitQ();
@@ -64,13 +64,13 @@ public abstract class RlAgent : MonoBehaviour
         _epsilon = epsilon;
     }
 
-    private void InitPI()
+    protected virtual void InitPI()
     {
         foreach (var state in environment.States)
             UpdatePolicy(state, GetRandomAction());
     }
     
-    private void InitQ()
+    protected virtual void InitQ()
     {
         foreach (var state in environment.States)
             foreach (var action in _actions)
@@ -128,7 +128,7 @@ public abstract class RlAgent : MonoBehaviour
     
     protected float Q(InstanceManager.State s, SnakeHead.Direction a)
     {
-        return _qFunction[new StateAction { state = s, action = a }];
+        return _qFunction[new StateAction(s, a)];
     }
 
     protected void UpdatePolicy(InstanceManager.State state, SnakeHead.Direction action)
@@ -138,7 +138,7 @@ public abstract class RlAgent : MonoBehaviour
 
     protected void UpdateQ(InstanceManager.State state, SnakeHead.Direction action, float expectedReward)
     {
-        _qFunction[new StateAction { state = state, action = action }] = expectedReward;
+        _qFunction[new StateAction(state, action)] = expectedReward;
     }
 
     private SnakeHead.Direction GetRandomAction()
@@ -194,7 +194,7 @@ public abstract class RlAgent : MonoBehaviour
         foreach (var state in environment.States)
         {
             foreach (var action in _actions)
-                _qFunction[new StateAction { state = state, action = action }] = jsonData.q[cnt++];
+                _qFunction[new StateAction(state, action)] = jsonData.q[cnt++];
             _policy[state] = GetMaxForState(state);
         }
     }
@@ -254,6 +254,12 @@ internal record StateAction
 {
     public InstanceManager.State state;
     public SnakeHead.Direction action;
+
+    public StateAction(InstanceManager.State state, SnakeHead.Direction action)
+    {
+        this.state = state;
+        this.action = action;
+    }
 }
 
 internal class StateActionComparer : IEqualityComparer<StateAction>

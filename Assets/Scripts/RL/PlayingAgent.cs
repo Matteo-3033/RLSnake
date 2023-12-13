@@ -35,7 +35,7 @@ public class PlayingAgent : MonoBehaviour
     {
         return _actions
             .OrderByDescending(
-                action => q[new StateAction { state = state, action = action }]
+                action => q[new StateAction(state, action)]
             )
             .FirstOrDefault();
     }
@@ -51,7 +51,7 @@ public class PlayingAgent : MonoBehaviour
         foreach (var state in environment.States)
         {
             foreach (var action in _actions)
-                qFunction[new StateAction { state = state, action = action }] = jsonData.q[cnt++];
+                qFunction[new StateAction(state, action)] = jsonData.q[cnt++];
             _policy[state] = GetMaxForState(qFunction, state);
         }
     }
