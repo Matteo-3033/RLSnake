@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class UIEpochCnt : MonoBehaviour
 {
-    [SerializeField] private RlAgent agent;
+    [SerializeField] private EpochsPlayer agent;
     
     private TextMeshProUGUI _text;
     private string _baseText;
@@ -20,7 +20,7 @@ public class UIEpochCnt : MonoBehaviour
         agent.OnEpochFinished += OnEpochFinished;
     }
 
-    private void OnEpochFinished(object sender, RlAgent.OnEpochFinishedArgs args)
+    private void OnEpochFinished(object sender, EpochsPlayer.OnEpochFinishedArgs args)
     {
         _text.text = $"{_baseText}{args.EpochsCnt}";
     }

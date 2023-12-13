@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public abstract class RlAgent : MonoBehaviour
+public abstract class RlAgent : EpochsPlayer
 {
     [SerializeField] private Environment environment;
     
@@ -25,13 +25,6 @@ public abstract class RlAgent : MonoBehaviour
 
     protected Environment Environment => environment;
     protected abstract string ModelFileName { get; }
-    
-    public event EventHandler<OnEpochFinishedArgs> OnEpochFinished;
-    public class OnEpochFinishedArgs: EventArgs
-    {
-        public readonly int EpochsCnt;
-        public OnEpochFinishedArgs(int epochsCnt) => EpochsCnt = epochsCnt;
-    }
     
     private readonly Dictionary<StateAction, float> _qFunction = new (new StateActionComparer());
     private readonly Dictionary<InstanceManager.State, SnakeHead.Direction> _policy = new(new StateComparer());
@@ -108,7 +101,7 @@ public abstract class RlAgent : MonoBehaviour
             _epsilon = Math.Clamp(_epsilon * epsilonDecay, minEpsilon, 1F);
             Alpha *= alphaReductionFactor;
             currentEpoch++;
-            OnEpochFinished?.Invoke(this, new OnEpochFinishedArgs(currentEpoch));
+            InvokeOnEpochFinished(new OnEpochFinishedArgs(currentEpoch));
             if (currentEpoch % 250 == 0)
                 SaveModel();
         }

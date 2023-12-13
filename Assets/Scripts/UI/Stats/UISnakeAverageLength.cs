@@ -6,7 +6,7 @@ using UnityEngine;
 public class UISnakeAverageLength : MonoBehaviour
 {
     [SerializeField] private InstanceManager instanceManager;
-    [SerializeField] private RlAgent agent;
+    [SerializeField] private EpochsPlayer agent;
     [SerializeField] private int cnt = 10;
     
     private TextMeshProUGUI _text;
@@ -26,7 +26,7 @@ public class UISnakeAverageLength : MonoBehaviour
         agent.OnEpochFinished += OnEpochFinished;
     }
 
-    private void OnEpochFinished(object sender, RlAgent.OnEpochFinishedArgs args)
+    private void OnEpochFinished(object sender, EpochsPlayer.OnEpochFinishedArgs args)
     {
         _queue.Enqueue(instanceManager.Score);
         if (_queue.Count > cnt)

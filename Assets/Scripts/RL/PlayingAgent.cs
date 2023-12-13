@@ -4,11 +4,12 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-public class PlayingAgent : MonoBehaviour
+public class PlayingAgent : EpochsPlayer
 {
     [SerializeField] private string modelFileName;
     [SerializeField] private Environment environment;
 
+    private int _matchesCnt;
     private InstanceManager.State _state;
     private readonly Dictionary<InstanceManager.State, SnakeHead.Direction> _policy = new(new StateComparer());
 
@@ -25,13 +26,16 @@ public class PlayingAgent : MonoBehaviour
     {
         _state = environment.GetState();
         if (environment.IsEpisodeFinished())
+        {
+            InvokeOnEpochFinished(new OnEpochFinishedArgs(_matchesCnt++));
             _state = environment.ResetEnvironment();
+        }
         
         var action = _policy[_state];
         environment.MakeAction(action);
     }
     
-    private SnakeHead.Direction GetMaxForState(Dictionary<StateAction, float> q, InstanceManager.State state)
+    private SnakeHead.Direction GetMaxForState(IReadOnlyDictionary<StateAction, float> q, InstanceManager.State state)
     {
         return _actions
             .OrderByDescending(
