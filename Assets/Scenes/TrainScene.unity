@@ -3102,7 +3102,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7556325958828533750, guid: bc5e39cf9e97fa34e9ba7d8ee48f80a3, type: 3}
       propertyPath: gameOverReward
-      value: -20
+      value: -400
       objectReference: {fileID: 0}
     - target: {fileID: 7556325958828533750, guid: bc5e39cf9e97fa34e9ba7d8ee48f80a3, type: 3}
       propertyPath: appleEatenReward
