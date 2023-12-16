@@ -18,15 +18,9 @@ public class TdLambdaRlAgent : RlAgent
         var policyAction = PI(nextState);
         var nextAction = GetMaxForState(nextState);
         
-        Debug.Log("Forward: "+ Q(nextState, Environment.Action.Forward));
-        Debug.Log("Right: " + Q(nextState, Environment.Action.TurnRight));
-        Debug.Log("Left: " + Q(nextState, Environment.Action.TurnLeft));
-        
         UpdatePolicy(nextState, nextAction);
         
         var delta = reward + gamma * Q(nextState, nextAction) - Q(state, action);
-        Debug.Log("Delta: " + delta);
-        
         var zeroing = policyAction != nextAction;
         
         UpdateE(state, action, E(state, action) + 1);
@@ -38,11 +32,6 @@ public class TdLambdaRlAgent : RlAgent
                 UpdateE(s, a, zeroing ? 0F : gamma * lambda * E(s, a));
             }
         }
-        
-        Debug.Log("POI");
-        Debug.Log("Forward: "+ Q(nextState, Environment.Action.Forward));
-        Debug.Log("Right: " + Q(nextState, Environment.Action.TurnRight));
-        Debug.Log("Left: " + Q(nextState, Environment.Action.TurnLeft));
     }
 
     protected override void Init()

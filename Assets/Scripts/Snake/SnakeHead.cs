@@ -6,7 +6,6 @@ using UnityEngine;
 public class SnakeHead : SnakeComponent
 {
     public Direction CurrentDirection { get; private set; } = Direction.Right;
-    private Direction? _lastDirection;
     
     [Range(0.0001F, 1)] public float timeBetweenMoves = 0.5F;
 
@@ -42,22 +41,25 @@ public class SnakeHead : SnakeComponent
     public bool ChangeDirection(Direction direction)
     {
         if (!IsValidDirection(direction)) return false;
-        
         CurrentDirection = direction;
         return true;
     }
     
     public bool IsValidDirection(Direction direction)
     {
-        switch (direction)
+        return direction != OppositeDirection(CurrentDirection);
+    }
+
+    public Direction OppositeDirection(Direction direction)
+    {
+        return direction switch
         {
-            case Direction.Up when _lastDirection == Direction.Down:
-            case Direction.Down when _lastDirection == Direction.Up:
-            case Direction.Left when _lastDirection == Direction.Right:
-            case Direction.Right when _lastDirection == Direction.Left:
-                return false;
-        }
-        return true;
+            Direction.Up => Direction.Down,
+            Direction.Down => Direction.Up,
+            Direction.Left => Direction.Right,
+            Direction.Right => Direction.Left,
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+        };
     }
     
     private IEnumerator UpdatePosition()
@@ -66,7 +68,6 @@ public class SnakeHead : SnakeComponent
         while (true)
         {
             yield return new WaitForSeconds(timeBetweenMoves);
-            _lastDirection = CurrentDirection;
             MoveTo(GridPosition + _directionToVector[CurrentDirection]);
         }
         // ReSharper disable once IteratorNeverReturns
@@ -81,7 +82,6 @@ public class SnakeHead : SnakeComponent
         }
         
         CurrentDirection = Direction.Right;
-        _lastDirection = null;
         
         InitPosition(grid.GetRandomFreePosition());
         StartCoroutine(nameof(UpdatePosition));
