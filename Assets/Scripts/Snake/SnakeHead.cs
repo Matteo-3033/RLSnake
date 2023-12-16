@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class SnakeHead : SnakeComponent
 {
-    private Direction _direction = Direction.Right;
+    public Direction CurrentDirection { get; private set; } = Direction.Right;
     private Direction? _lastDirection;
     
     [Range(0.0001F, 1)] public float timeBetweenMoves = 0.5F;
@@ -43,7 +43,7 @@ public class SnakeHead : SnakeComponent
     {
         if (!IsValidDirection(direction)) return false;
         
-        _direction = direction;
+        CurrentDirection = direction;
         return true;
     }
     
@@ -66,8 +66,8 @@ public class SnakeHead : SnakeComponent
         while (true)
         {
             yield return new WaitForSeconds(timeBetweenMoves);
-            _lastDirection = _direction;
-            MoveTo(GridPosition + _directionToVector[_direction]);
+            _lastDirection = CurrentDirection;
+            MoveTo(GridPosition + _directionToVector[CurrentDirection]);
         }
         // ReSharper disable once IteratorNeverReturns
     }
@@ -80,7 +80,7 @@ public class SnakeHead : SnakeComponent
             PreviousSnake = null;
         }
         
-        _direction = Direction.Right;
+        CurrentDirection = Direction.Right;
         _lastDirection = null;
         
         InitPosition(grid.GetRandomFreePosition());

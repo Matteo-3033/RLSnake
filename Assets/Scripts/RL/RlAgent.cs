@@ -22,10 +22,10 @@ public abstract class RlAgent : EpochsPlayer
     protected abstract string ModelFileName { get; }
     
     private readonly Dictionary<StateAction, float> _qFunction = new (new StateActionComparer());
-    private readonly Dictionary<InstanceManager.State, SnakeHead.Direction> _policy = new(new StateComparer());
+    private readonly Dictionary<InstanceManager.State, Environment.Action> _policy = new(new StateComparer());
 
-    private readonly List<SnakeHead.Direction> _actions =
-        Enum.GetValues(typeof(SnakeHead.Direction)).Cast<SnakeHead.Direction>().ToList();
+    private readonly List<Environment.Action> _actions =
+        Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
 
     private void Start()
     {
@@ -100,37 +100,35 @@ public abstract class RlAgent : EpochsPlayer
         // ReSharper disable once IteratorNeverReturns
     }
     
-    protected abstract void RlAlgorithm(InstanceManager.State state, SnakeHead.Direction action, int reward, InstanceManager.State nextState);
+    protected abstract void RlAlgorithm(InstanceManager.State state, Environment.Action action, int reward, InstanceManager.State nextState);
 
-    protected SnakeHead.Direction PI(InstanceManager.State s)
+    protected Environment.Action PI(InstanceManager.State s)
     {
-        var action = _policy[s];
-        
-        return action;
+        return _policy[s];
     }
     
-    protected float Q(InstanceManager.State s, SnakeHead.Direction a)
+    protected float Q(InstanceManager.State s, Environment.Action a)
     {
         return _qFunction[new StateAction(s, a)];
     }
 
-    protected void UpdatePolicy(InstanceManager.State state, SnakeHead.Direction action)
+    protected void UpdatePolicy(InstanceManager.State state, Environment.Action action)
     {
         _policy[state] = action;
     }
 
-    protected void UpdateQ(InstanceManager.State state, SnakeHead.Direction action, float expectedReward)
+    protected void UpdateQ(InstanceManager.State state, Environment.Action action, float expectedReward)
     {
         _qFunction[new StateAction(state, action)] = expectedReward;
     }
 
-    private SnakeHead.Direction GetRandomAction()
+    private Environment.Action GetRandomAction()
     {
         var actionIndex = Random.Range(0, _actions.Count);
         return _actions[actionIndex];
     }
     
-    protected SnakeHead.Direction GetMaxForState(InstanceManager.State state)
+    protected Environment.Action GetMaxForState(InstanceManager.State state)
     {
         return _actions
             .OrderByDescending(
@@ -222,9 +220,9 @@ public abstract class RlAgent : EpochsPlayer
 internal record StateAction
 {
     public InstanceManager.State state;
-    public SnakeHead.Direction action;
+    public Environment.Action action;
 
-    public StateAction(InstanceManager.State state, SnakeHead.Direction action)
+    public StateAction(InstanceManager.State state, Environment.Action action)
     {
         this.state = state;
         this.action = action;

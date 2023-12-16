@@ -15,6 +15,13 @@ public class Environment : MonoBehaviour
     private int _nextReward;
     public readonly List<InstanceManager.State> States = new();
 
+    public enum Action
+    {
+        Forward = 0,
+        TurnLeft = -1,
+        TurnRight = 1
+    }
+
     private void Awake()
     {
         InitStates();
@@ -46,19 +53,30 @@ public class Environment : MonoBehaviour
                             });
     }
 
-    public void MakeAction(SnakeHead.Direction action)
+    public void MakeAction(Action action)
     {
         if (IsEpisodeFinished())
             throw new Exception("Episode already finished; invoke Reset to start a new one");
-        _nextReward = GetDirectionReward(action);
-        instanceManager.ChangeDirection(action);
+        var direction = ActionToDirection(action);
+        _nextReward = GetDirectionReward(direction);
+        instanceManager.ChangeDirection(direction);
+    }
+    private SnakeHead.Direction ActionToDirection(Action action)
+    {
+        var directions = new[]{ SnakeHead.Direction.Up, SnakeHead.Direction.Right, SnakeHead.Direction.Down, SnakeHead.Direction.Left }; 
+        var index = instanceManager.SnakeHead.CurrentDirection switch
+        {
+            SnakeHead.Direction.Up => 0,
+            SnakeHead.Direction.Right => 1,
+            SnakeHead.Direction.Down => 2,
+            SnakeHead.Direction.Left => 3
+        };
+        index += (int) action;
+        return directions[(index + 4) % 4];
     }
 
     private int GetDirectionReward(SnakeHead.Direction action)
     {
-        if (!instanceManager.IsValidDirection(action))
-            return 0;
-        
         var appleDirection = instanceManager.GetAppleDirection();
         
         switch (action)
