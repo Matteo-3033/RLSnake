@@ -11,10 +11,10 @@ public class PlayingAgent : EpochsPlayer
 
     private int _matchesCnt;
     private InstanceManager.State _state;
-    private readonly Dictionary<InstanceManager.State, SnakeHead.Direction> _policy = new(new StateComparer());
+    private readonly Dictionary<InstanceManager.State, Environment.Action> _policy = new(new StateComparer());
 
-    private readonly List<SnakeHead.Direction> _actions =
-        Enum.GetValues(typeof(SnakeHead.Direction)).Cast<SnakeHead.Direction>().ToList();
+    private readonly List<Environment.Action> _actions =
+        Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
 
     private void Start()
     {
@@ -35,7 +35,7 @@ public class PlayingAgent : EpochsPlayer
         environment.MakeAction(action);
     }
     
-    private SnakeHead.Direction GetMaxForState(IReadOnlyDictionary<StateAction, float> q, InstanceManager.State state)
+    private Environment.Action GetMaxForState(IReadOnlyDictionary<StateAction, float> q, InstanceManager.State state)
     {
         return _actions
             .OrderByDescending(

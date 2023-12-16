@@ -11,9 +11,9 @@ public class TdLambdaRlAgent : RlAgent
     
     private readonly Dictionary<StateAction, float> _e = new (new StateActionComparer());
     
-    private readonly List<SnakeHead.Direction> _actions = Enum.GetValues(typeof(SnakeHead.Direction)).Cast<SnakeHead.Direction>().ToList();
+    private readonly List<Environment.Action> _actions = Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
 
-    protected override void RlAlgorithm(InstanceManager.State state, SnakeHead.Direction action, int reward, InstanceManager.State nextState)
+    protected override void RlAlgorithm(InstanceManager.State state, Environment.Action action, int reward, InstanceManager.State nextState)
     {
         var policyAction = PI(nextState);
         var nextAction = GetMaxForState(nextState);
@@ -21,7 +21,6 @@ public class TdLambdaRlAgent : RlAgent
         UpdatePolicy(nextState, nextAction);
         
         var delta = reward + gamma * Q(nextState, nextAction) - Q(state, action);
-        
         var zeroing = policyAction != nextAction;
         
         UpdateE(state, action, E(state, action) + 1);
@@ -54,12 +53,12 @@ public class TdLambdaRlAgent : RlAgent
                 _e[new StateAction(state, action)] = 0F;
     }
     
-    private void UpdateE(InstanceManager.State state, SnakeHead.Direction action, float value)
+    private void UpdateE(InstanceManager.State state, Environment.Action action, float value)
     {
         _e[new StateAction(state, action)] = value;
     }
     
-    private float E(InstanceManager.State state, SnakeHead.Direction action)
+    private float E(InstanceManager.State state, Environment.Action action)
     {
         return _e[new StateAction(state, action)];
     }

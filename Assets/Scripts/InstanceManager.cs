@@ -86,7 +86,7 @@ public class InstanceManager : MonoBehaviour
 
     public State GetGameState()
     {
-        return new State
+        var state = new State
         {
             appleDirection = GetAppleDirection(),
             top = grid.GetElementAt(snake.GridPosition + Vector2.up),
@@ -94,11 +94,24 @@ public class InstanceManager : MonoBehaviour
             right = grid.GetElementAt(snake.GridPosition + Vector2.right),
             bottom = grid.GetElementAt(snake.GridPosition + Vector2.down)
         };
-    }
-    
-    public bool IsValidDirection(SnakeHead.Direction direction)
-    {
-        return snake.IsValidDirection(direction);
+
+        switch (SnakeHead.OppositeDirection(SnakeHead.CurrentDirection))
+        {
+            case SnakeHead.Direction.Up:
+                state.top = SnakeGrid.Element.Last;
+                break;
+            case SnakeHead.Direction.Down:
+                state.bottom = SnakeGrid.Element.Last;
+                break;
+            case SnakeHead.Direction.Left:
+                state.left = SnakeGrid.Element.Last;
+                break;
+            case SnakeHead.Direction.Right:
+                state.right = SnakeGrid.Element.Last;
+                break;
+        }
+
+        return state;
     }
 
     public AppleDirection GetAppleDirection()

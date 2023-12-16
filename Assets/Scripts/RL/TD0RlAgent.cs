@@ -2,7 +2,7 @@ public class Td0RlAgent : RlAgent
 {
     protected override string ModelFileName => "td0.json";
 
-    protected override void RlAlgorithm(InstanceManager.State state, SnakeHead.Direction action, int reward, InstanceManager.State nextState)
+    protected override void RlAlgorithm(InstanceManager.State state, Environment.Action action, int reward, InstanceManager.State nextState)
     {
         var nextAction = GetMaxForState(nextState);
         UpdatePolicy(nextState, nextAction);
