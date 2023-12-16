@@ -25,7 +25,8 @@ public class SnakeGrid: MonoBehaviour {
     {
         Snake,
         Apple,
-        None
+        None,
+        Last
     }
     
     private void Awake()
