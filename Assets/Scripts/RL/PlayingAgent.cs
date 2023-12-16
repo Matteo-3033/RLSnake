@@ -10,8 +10,8 @@ public class PlayingAgent : EpochsPlayer
     [SerializeField] private Environment environment;
 
     private int _matchesCnt;
-    private InstanceManager.State _state;
-    private readonly Dictionary<InstanceManager.State, Environment.Action> _policy = new(new StateComparer());
+    private Environment.State _state;
+    private readonly Dictionary<Environment.State, Environment.Action> _policy = new(new StateComparer());
 
     private readonly List<Environment.Action> _actions =
         Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
@@ -35,7 +35,7 @@ public class PlayingAgent : EpochsPlayer
         environment.MakeAction(action);
     }
     
-    private Environment.Action GetMaxForState(IReadOnlyDictionary<StateAction, float> q, InstanceManager.State state)
+    private Environment.Action GetMaxForState(IReadOnlyDictionary<StateAction, float> q, Environment.State state)
     {
         return _actions
             .OrderByDescending(

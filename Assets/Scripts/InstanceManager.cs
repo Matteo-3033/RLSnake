@@ -55,7 +55,7 @@ public class InstanceManager : MonoBehaviour
         OnGameOver?.Invoke(this, EventArgs.Empty);
     }
     
-    public State StartGame()
+    public void StartGame()
     {
         Debug.Log("Starting game");
         Score = 0;
@@ -67,8 +67,6 @@ public class InstanceManager : MonoBehaviour
         Running = true;
         
         OnSnakeGrowth?.Invoke(this, new OnSnakeGrowthArgs(Score));
-
-        return GetGameState();
     }
 
     private void StopGame()
@@ -82,83 +80,5 @@ public class InstanceManager : MonoBehaviour
     {
         if (playerControlled) return false;
         return snake.ChangeDirection(direction);
-    }
-
-    public State GetGameState()
-    {
-        var state = new State
-        {
-            appleDirection = GetAppleDirection(),
-            top = grid.GetElementAt(snake.GridPosition + Vector2.up),
-            left = grid.GetElementAt(snake.GridPosition + Vector2.left),
-            right = grid.GetElementAt(snake.GridPosition + Vector2.right),
-            bottom = grid.GetElementAt(snake.GridPosition + Vector2.down)
-        };
-
-        switch (SnakeHead.OppositeDirection(SnakeHead.CurrentDirection))
-        {
-            case SnakeHead.Direction.Up:
-                state.top = SnakeGrid.Element.Last;
-                break;
-            case SnakeHead.Direction.Down:
-                state.bottom = SnakeGrid.Element.Last;
-                break;
-            case SnakeHead.Direction.Left:
-                state.left = SnakeGrid.Element.Last;
-                break;
-            case SnakeHead.Direction.Right:
-                state.right = SnakeGrid.Element.Last;
-                break;
-        }
-
-        return state;
-    }
-
-    public AppleDirection GetAppleDirection()
-    {
-        var applePos = appleGenerator.GridPosition;
-        var snakePos = snake.GridPosition;
-        
-        if (applePos.x < snakePos.x)
-        {
-            if (applePos.y < snakePos.y)
-                return AppleDirection.BottomLeft;
-            if (applePos.y > snakePos.y)
-                return AppleDirection.TopLeft;
-            return AppleDirection.Left;
-        }
-        
-        if (applePos.x > snakePos.x)
-        {
-            if (applePos.y < snakePos.y)
-                return AppleDirection.BottomRight;
-            if (applePos.y > snakePos.y)
-                return AppleDirection.TopRight;
-            return AppleDirection.Right;
-        }
-        
-        if (applePos.y < snakePos.y)
-            return AppleDirection.Bottom;
-        if (applePos.y > snakePos.y)
-            return AppleDirection.Top;
-        
-        return AppleDirection.Left;
-    }
-
-    [Serializable]
-    public record State
-    {
-        public AppleDirection appleDirection;
-        public SnakeGrid.Element top;
-        public SnakeGrid.Element left;
-        public SnakeGrid.Element right;
-        public SnakeGrid.Element bottom;
-    }
-
-    [Serializable]
-    public enum AppleDirection
-    {
-        Left, Right, Top, Bottom,
-        TopLeft, TopRight, BottomLeft, BottomRight
     }
 }

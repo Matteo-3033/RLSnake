@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -131,29 +132,35 @@ public class SnakeGrid: MonoBehaviour {
             .OrderBy(_ => Guid.NewGuid())
             .FirstOrDefault();
     }
-    
-    public Element[][] GetSquareCenteredIn(Vector2 center, int size = 3)
+
+    public int BreathFirstSearch(Vector2 start)
     {
-        if (size % 2 == 0)
-            throw new Exception("size must be odd");
+        if (GetElementAt(start) == Element.Snake)
+            return 0;
         
-        var res = new Element[size][];
-
-        var offset = size / 2;
-        for (var i = 0; i < size; i++)
+        var visited = new bool[height][];
+        for (var y = 0; y < visited.Length; y++)
+            visited[y] = new bool[width];
+        
+        var queue = new Queue<Vector2>();
+        queue.Enqueue(start);
+        visited[(int) start.y][(int) start.x] = true;
+        
+        var count = 0;
+        while (queue.Count > 0)
         {
-            res[i] = new Element[size];
-            for (var j = 0; j < size; j++)
+            var current = queue.Dequeue();
+            count++;
+            
+            foreach (var neighbour in new[]{ current + Vector2.up, current + Vector2.right, current + Vector2.down, current + Vector2.left})
             {
-                var y = (int)center.y + i - offset;
-                var x = (int)center.x + j - offset;
-
-                if (y < 0 || y >= _grid.Length || x < 0 || x >= _grid[y].Length)
-                    res[i][j] = Element.Snake;
-                else res[i][j] = _grid[y][x];    // == Element.Snake ? Element.Snake : Element.None;
+                if (visited[(int) neighbour.y][(int) neighbour.x]) continue;
+                if (GetElementAt(neighbour) == Element.Snake) continue;
+                visited[(int) neighbour.y][(int) neighbour.x] = true;
+                queue.Enqueue(neighbour);
             }
         }
-
-        return res;
+        
+        return count;
     }
 }

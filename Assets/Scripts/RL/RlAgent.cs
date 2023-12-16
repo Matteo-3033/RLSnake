@@ -27,7 +27,7 @@ public abstract class RlAgent : EpochsPlayer
     protected abstract string ModelFileName { get; }
     
     private readonly Dictionary<StateAction, float> _qFunction = new (new StateActionComparer());
-    private readonly Dictionary<InstanceManager.State, Environment.Action> _policy = new(new StateComparer());
+    private readonly Dictionary<Environment.State, Environment.Action> _policy = new(new StateComparer());
 
     private readonly List<Environment.Action> _actions =
         Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
@@ -110,9 +110,9 @@ public abstract class RlAgent : EpochsPlayer
         // ReSharper disable once IteratorNeverReturns
     }
     
-    protected abstract void RlAlgorithm(InstanceManager.State state, Environment.Action action, int reward, InstanceManager.State nextState);
+    protected abstract void RlAlgorithm(Environment.State state, Environment.Action action, int reward, Environment.State nextState);
 
-    protected Environment.Action PI(InstanceManager.State s)
+    protected Environment.Action PI(Environment.State s)
     {
         var action = _policy[s];
         
@@ -122,17 +122,17 @@ public abstract class RlAgent : EpochsPlayer
         return action;
     }
     
-    protected float Q(InstanceManager.State s, Environment.Action a)
+    protected float Q(Environment.State s, Environment.Action a)
     {
         return _qFunction[new StateAction(s, a)];
     }
 
-    protected void UpdatePolicy(InstanceManager.State state, Environment.Action action)
+    protected void UpdatePolicy(Environment.State state, Environment.Action action)
     {
         _policy[state] = action;
     }
 
-    protected void UpdateQ(InstanceManager.State state, Environment.Action action, float expectedReward)
+    protected void UpdateQ(Environment.State state, Environment.Action action, float expectedReward)
     {
         _qFunction[new StateAction(state, action)] = expectedReward;
     }
@@ -143,7 +143,7 @@ public abstract class RlAgent : EpochsPlayer
         return _actions[actionIndex];
     }
     
-    protected Environment.Action GetMaxForState(InstanceManager.State state)
+    protected Environment.Action GetMaxForState(Environment.State state)
     {
         return _actions
             .OrderByDescending(
@@ -248,10 +248,10 @@ public abstract class RlAgent : EpochsPlayer
 [Serializable]
 internal record StateAction
 {
-    public InstanceManager.State state;
+    public Environment.State state;
     public Environment.Action action;
 
-    public StateAction(InstanceManager.State state, Environment.Action action)
+    public StateAction(Environment.State state, Environment.Action action)
     {
         this.state = state;
         this.action = action;
@@ -282,9 +282,9 @@ internal class StateActionComparer : IEqualityComparer<StateAction>
     }
 }
 
-internal class StateComparer : IEqualityComparer<InstanceManager.State>
+internal class StateComparer : IEqualityComparer<Environment.State>
 {
-    public bool Equals(InstanceManager.State x, InstanceManager.State y)
+    public bool Equals(Environment.State x, Environment.State y)
     {
         if (y == null && x == null)
             return true;
@@ -292,11 +292,11 @@ internal class StateComparer : IEqualityComparer<InstanceManager.State>
         if (x == null || y == null)
             return false;
         
-        return x.appleDirection == y.appleDirection && x.top == y.top && x.bottom == y.bottom && x.left == y.left && x.right == y.right;
+        return x.appleDirection == y.appleDirection && x.front == y.front && x.left == y.left && x.right == y.right;
     }
 
-    public int GetHashCode(InstanceManager.State obj)
+    public int GetHashCode(Environment.State obj)
     {
-        return (int)obj.appleDirection * 23 + (int)obj.top * 17 + (int)obj.bottom * 13 + (int)obj.left * 11 + (int)obj.right * 7;
+        return (int)obj.appleDirection * 23 + obj.front * 17 + obj.left * 13 + obj.right * 11;
     }
 }
