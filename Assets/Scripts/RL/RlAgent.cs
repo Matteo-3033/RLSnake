@@ -34,18 +34,20 @@ public abstract class RlAgent : EpochsPlayer
 
     private void Start()
     {
-        if (Settings.UseModels)
-            LoadModel();
-        else Init();
-            
+        Init();
         StartCoroutine(nameof(MainLoop));
     }
 
     protected virtual void Init()
     {
-        InitPI();
-        InitQ();
-        InitParameters();
+        if (Settings.UseModels)
+            LoadModel();
+        else
+        {
+            InitPI();
+            InitQ();
+            InitParameters();
+        }
     }
 
     protected virtual void InitParameters()
