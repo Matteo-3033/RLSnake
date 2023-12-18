@@ -9,7 +9,6 @@ public class Environment : MonoBehaviour
     
     [SerializeField] private int correctDirectionReward = 1;
     [SerializeField] private int wrongDirectionReward = -1;
-    [SerializeField] private int appleEatenReward = 2;
     [SerializeField] private int gameOverReward = -10;
     
     private int _nextReward;
@@ -18,6 +17,16 @@ public class Environment : MonoBehaviour
     private SnakeHead Snake => instanceManager.SnakeHead;
     private SnakeGrid Grid => instanceManager.Grid;
     private AppleGenerator AppleGenerator => instanceManager.AppleGenerator;
+    
+    private readonly SnakeHead.Direction[] _directions = { SnakeHead.Direction.Up, SnakeHead.Direction.Right, SnakeHead.Direction.Down, SnakeHead.Direction.Left };
+
+    private readonly Dictionary<SnakeHead.Direction, int> _directionToIndex = new()
+    {
+        { SnakeHead.Direction.Up, 0 },
+        { SnakeHead.Direction.Right, 1 },
+        { SnakeHead.Direction.Down, 2 },
+        { SnakeHead.Direction.Left, 3 }
+    };
 
     private void Awake()
     {
@@ -27,24 +36,25 @@ public class Environment : MonoBehaviour
     private void Start()
     {
         instanceManager.OnGameOver += OnGameOver;
-        instanceManager.OnSnakeGrowth += OnAppleEaten;
     }
 
     public float TimeBetweenActions => instanceManager.SnakeTimeBetweenMoves;
     
     private void InitStates()
     {
-        var elements = Enum.GetValues(typeof(SnakeGrid.Element)).Cast<SnakeGrid.Element>().ToList();
-        
-        for (var d = AppleDirection.Left; d <= AppleDirection.BottomRight; d++)
-            foreach (var top in elements)
-                foreach (var bottom in elements)
-                    foreach (var left in elements)
-                        foreach (var right in elements)
+        var appleDirectionsList = Enum.GetValues(typeof(AppleDirection)).Cast<AppleDirection>().ToList();
+        var snakeDirectionsList = Enum.GetValues(typeof(SnakeHead.Direction)).Cast<SnakeHead.Direction>().ToList();
+        var freeCellsList = Enum.GetValues(typeof(FreeCells)).Cast<FreeCells>().ToList();
+
+        foreach (var appleDir in appleDirectionsList)
+            foreach (var snakeDir in snakeDirectionsList)
+                foreach (var front in freeCellsList)
+                    foreach (var left in freeCellsList)
+                        foreach (var right in freeCellsList)
                             States.Add(new State {
-                                appleDirection = d,
-                                top = top,
-                                bottom = bottom,
+                                appleDirection = appleDir,
+                                snakeDirection = snakeDir,
+                                front = front,
                                 left = left,
                                 right = right
                             });
@@ -88,25 +98,9 @@ public class Environment : MonoBehaviour
         }
     }
 
-    private readonly SnakeHead.Direction[] _directions = new[]{ SnakeHead.Direction.Up, SnakeHead.Direction.Right, SnakeHead.Direction.Down, SnakeHead.Direction.Left };
-
-    private readonly Dictionary<SnakeHead.Direction, int> _directionToIndex = new()
-    {
-        { SnakeHead.Direction.Up, 0 },
-        { SnakeHead.Direction.Right, 1 },
-        { SnakeHead.Direction.Down, 2 },
-        { SnakeHead.Direction.Left, 3 }
-    };
-
     public int GetReward()
     {
         return _nextReward;
-    }
-    
-    private void OnAppleEaten(object sender, InstanceManager.OnSnakeGrowthArgs args)
-    {
-        if (args.Length > 0)
-            _nextReward = appleEatenReward;
     }
     
     private void OnGameOver(object sender, EventArgs e)
@@ -132,13 +126,44 @@ public class Environment : MonoBehaviour
         var index = _directionToIndex[Snake.CurrentDirection];
         var leftDirection = _directions[((index - 1) + 4) % 4];
         var rightDirection = _directions[((index + 1) + 4) % 4];
+
+        var front = Grid.BreathFirstSearch(Snake.GridPosition + SnakeHead.DirectionToVector[Snake.CurrentDirection]);
+        var left = Grid.BreathFirstSearch(Snake.GridPosition + SnakeHead.DirectionToVector[leftDirection]);
+        var right = Grid.BreathFirstSearch(Snake.GridPosition + SnakeHead.DirectionToVector[rightDirection]);
+
+        Dictionary<int, FreeCells> dirEnums = new();
+        
+        var l = new List<Tuple<int, int>>
+        {
+            Tuple.Create(0, front),
+            Tuple.Create(1, left),
+            Tuple.Create(2, right)
+        };
+        l.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+
+        if (l[0].Item2 == 0)
+            dirEnums[l[0].Item1] = FreeCells.None;
+        else dirEnums[l[0].Item1] = FreeCells.More;
+        
+        if (l[1].Item2 == 0)
+            dirEnums[l[1].Item1] = FreeCells.None;
+        else if (l[1].Item2 == l[0].Item2)
+            dirEnums[l[1].Item1] = dirEnums[l[0].Item1];
+        else dirEnums[l[1].Item1] = dirEnums[l[0].Item1] - 1;
+        
+        if (l[2].Item2 == 0)
+            dirEnums[l[2].Item1] = FreeCells.None;
+        else if (l[2].Item2 == l[1].Item2)
+            dirEnums[l[2].Item1] = dirEnums[l[1].Item1];
+        else dirEnums[l[2].Item1] = dirEnums[l[1].Item1] - 1;
         
         var state = new State
         {
             appleDirection = GetAppleDirection(),
-            front = Grid.BreathFirstSearch(Snake.GridPosition + SnakeHead.DirectionToVector[Snake.CurrentDirection]),
-            left = Grid.BreathFirstSearch(Snake.GridPosition + SnakeHead.DirectionToVector[leftDirection]),
-            right = Grid.BreathFirstSearch(Snake.GridPosition + SnakeHead.DirectionToVector[rightDirection]),
+            snakeDirection = Snake.CurrentDirection,
+            front = dirEnums[0],
+            left = dirEnums[1],
+            right = dirEnums[2]
         };
 
         return state;
@@ -187,9 +212,10 @@ public class Environment : MonoBehaviour
     public record State
     {
         public AppleDirection appleDirection;
-        public int front;
-        public int left;
-        public int right;
+        public SnakeHead.Direction snakeDirection;
+        public FreeCells front;
+        public FreeCells left;
+        public FreeCells right;
     }
 
     [Serializable]
@@ -197,5 +223,11 @@ public class Environment : MonoBehaviour
     {
         Left, Right, Top, Bottom,
         TopLeft, TopRight, BottomLeft, BottomRight
+    }
+
+    [Serializable]
+    public enum FreeCells
+    {
+        None, Less, More
     }
 }

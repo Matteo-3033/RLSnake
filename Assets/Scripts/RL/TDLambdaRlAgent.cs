@@ -9,7 +9,7 @@ public class TdLambdaRlAgent : RlAgent
     
     protected override string ModelFileName => "tdLambda.json";
     
-    private readonly Dictionary<StateAction, float> _e = new (new StateActionComparer());
+    private readonly Dictionary<StateAction, float> _e = new ();
     
     private readonly List<Environment.Action> _actions = Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
 

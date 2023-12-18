@@ -11,7 +11,7 @@ public class PlayingAgent : EpochsPlayer
 
     private int _matchesCnt;
     private Environment.State _state;
-    private readonly Dictionary<Environment.State, Environment.Action> _policy = new(new StateComparer());
+    private readonly Dictionary<Environment.State, Environment.Action> _policy = new();
 
     private readonly List<Environment.Action> _actions =
         Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
@@ -50,7 +50,7 @@ public class PlayingAgent : EpochsPlayer
         var jsonData = JsonUtility.FromJson<RlAgent.JsonModel>(json);
 
         var cnt = 0; 
-        var qFunction = new Dictionary<StateAction, float>(new StateActionComparer());
+        var qFunction = new Dictionary<StateAction, float>();
 
         foreach (var state in environment.States)
         {

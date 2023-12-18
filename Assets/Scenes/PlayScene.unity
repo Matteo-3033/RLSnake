@@ -201,7 +201,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8232083729673949852, guid: bc5e39cf9e97fa34e9ba7d8ee48f80a3, type: 3}
       propertyPath: m_Name
-      value: InstanceTDLambda (1)
+      value: InstanceTDLambda
       objectReference: {fileID: 0}
     - target: {fileID: 8232083729673949852, guid: bc5e39cf9e97fa34e9ba7d8ee48f80a3, type: 3}
       propertyPath: m_IsActive

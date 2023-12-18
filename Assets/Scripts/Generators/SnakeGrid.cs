@@ -92,7 +92,7 @@ public class SnakeGrid: MonoBehaviour {
         return GetPositionAt(coord);
     }
 
-    public Element GetElementAt(Vector2 coord)
+    private Element GetElementAt(Vector2 coord)
     {
         return IsOutside(coord) ? Element.Snake : _grid[(int) coord.y][(int) coord.x];
     }
@@ -154,8 +154,8 @@ public class SnakeGrid: MonoBehaviour {
             
             foreach (var neighbour in new[]{ current + Vector2.up, current + Vector2.right, current + Vector2.down, current + Vector2.left})
             {
-                if (visited[(int) neighbour.y][(int) neighbour.x]) continue;
                 if (GetElementAt(neighbour) == Element.Snake) continue;
+                if (visited[(int) neighbour.y][(int) neighbour.x]) continue;
                 visited[(int) neighbour.y][(int) neighbour.x] = true;
                 queue.Enqueue(neighbour);
             }

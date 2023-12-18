@@ -20,6 +20,7 @@ public class InstanceManager : MonoBehaviour
     
     public bool Running { get; private set; }
     public int Score { get; private set; }
+    public int SnakeLength => Score + 1;
     
     public SnakeHead SnakeHead => snake;
     public SnakeGrid Grid => grid;
@@ -44,7 +45,7 @@ public class InstanceManager : MonoBehaviour
     private void SnakeComponentOnGrowth(object sender, EventArgs e)
     {
         Score += 1;
-        OnSnakeGrowth?.Invoke(this, new OnSnakeGrowthArgs(Score));
+        OnSnakeGrowth?.Invoke(this, new OnSnakeGrowthArgs(SnakeLength));
         appleGenerator.Reset();
     }
 
@@ -66,12 +67,12 @@ public class InstanceManager : MonoBehaviour
         
         Running = true;
         
-        OnSnakeGrowth?.Invoke(this, new OnSnakeGrowthArgs(Score));
+        OnSnakeGrowth?.Invoke(this, new OnSnakeGrowthArgs(SnakeLength));
     }
 
     private void StopGame()
     {
-        Debug.Log("Game over");
+        Debug.Log("Stopping game");
         Running = false;
         snake.Stop();
     }

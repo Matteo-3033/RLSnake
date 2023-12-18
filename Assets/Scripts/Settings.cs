@@ -7,6 +7,7 @@
     public static float Alpha = 0.9F;
     public static float Gamma = 0.25F;
     public static float Epsilon = 0F;
+    public static float MinEpsilon = 0F;
 
     public static bool UseModels = false;
 }
