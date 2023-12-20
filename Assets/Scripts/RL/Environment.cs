@@ -45,19 +45,26 @@ public class Environment : MonoBehaviour
         var appleDirectionsList = Enum.GetValues(typeof(AppleDirection)).Cast<AppleDirection>().ToList();
         var snakeDirectionsList = Enum.GetValues(typeof(SnakeHead.Direction)).Cast<SnakeHead.Direction>().ToList();
         var freeCellsList = Enum.GetValues(typeof(FreeCells)).Cast<FreeCells>().ToList();
+        var bools = new[] { true, false };
 
         foreach (var appleDir in appleDirectionsList)
             foreach (var snakeDir in snakeDirectionsList)
                 foreach (var front in freeCellsList)
                     foreach (var left in freeCellsList)
                         foreach (var right in freeCellsList)
-                            States.Add(new State {
-                                appleDirection = appleDir,
-                                snakeDirection = snakeDir,
-                                front = front,
-                                left = left,
-                                right = right
-                            });
+                            foreach (var frontTail in bools)
+                                foreach (var leftTail in bools)
+                                    foreach (var rightTail in bools)
+                                        States.Add(new State {
+                                            appleDirection = appleDir,
+                                            snakeDirection = snakeDir,
+                                            front = front,
+                                            left = left,
+                                            right = right,
+                                            frontReachTail = frontTail,
+                                            leftReachTail = leftTail,
+                                            rightReachTail = rightTail
+                                        });
     }
 
     public void MakeAction(Action action)
@@ -157,13 +164,17 @@ public class Environment : MonoBehaviour
             dirEnums[l[2].Item1] = dirEnums[l[1].Item1];
         else dirEnums[l[2].Item1] = dirEnums[l[1].Item1] - 1;
         
+        var tailPosition = Snake.TailGridPosition();
         var state = new State
         {
             appleDirection = GetAppleDirection(),
             snakeDirection = Snake.CurrentDirection,
             front = dirEnums[0],
             left = dirEnums[1],
-            right = dirEnums[2]
+            right = dirEnums[2],
+            frontReachTail = Grid.CanBeReachedFrom(tailPosition, Snake.GridPosition + SnakeHead.DirectionToVector[Snake.CurrentDirection]),
+            leftReachTail = Grid.CanBeReachedFrom(tailPosition, Snake.GridPosition + SnakeHead.DirectionToVector[leftDirection]),
+            rightReachTail = Grid.CanBeReachedFrom(tailPosition, Snake.GridPosition + SnakeHead.DirectionToVector[rightDirection])
         };
 
         return state;
@@ -216,6 +227,9 @@ public class Environment : MonoBehaviour
         public FreeCells front;
         public FreeCells left;
         public FreeCells right;
+        public bool frontReachTail;
+        public bool leftReachTail;
+        public bool rightReachTail;
     }
 
     [Serializable]
@@ -224,7 +238,7 @@ public class Environment : MonoBehaviour
         Left, Right, Top, Bottom,
         TopLeft, TopRight, BottomLeft, BottomRight
     }
-
+    
     [Serializable]
     public enum FreeCells
     {

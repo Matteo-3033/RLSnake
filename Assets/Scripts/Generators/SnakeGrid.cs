@@ -26,8 +26,7 @@ public class SnakeGrid: MonoBehaviour {
     {
         Snake,
         Apple,
-        None,
-        Last
+        None
     }
     
     private void Awake()
@@ -132,7 +131,7 @@ public class SnakeGrid: MonoBehaviour {
             .OrderBy(_ => Guid.NewGuid())
             .FirstOrDefault();
     }
-
+    
     public int BreathFirstSearch(Vector2 start)
     {
         if (GetElementAt(start) == Element.Snake)
@@ -162,5 +161,35 @@ public class SnakeGrid: MonoBehaviour {
         }
         
         return count;
+    }
+
+    public bool CanBeReachedFrom(Vector2 to, Vector2 start)
+    {
+        if (to.Equals(start)) return false;
+        if (GetElementAt(start) == Element.Snake) return false;
+        
+        var visited = new bool[height][];
+        for (var y = 0; y < visited.Length; y++)
+            visited[y] = new bool[width];
+
+        var queue = new Queue<Vector2>();
+        queue.Enqueue(start);
+        visited[(int) start.y][(int) start.x] = true;
+        
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            
+            foreach (var neighbour in new[]{ current + Vector2.up, current + Vector2.right, current + Vector2.down, current + Vector2.left})
+            {
+                if (neighbour.Equals(to)) return true;
+                if (GetElementAt(neighbour) == Element.Snake) continue;
+                if (visited[(int) neighbour.y][(int) neighbour.x]) continue;
+                visited[(int) neighbour.y][(int) neighbour.x] = true;
+                queue.Enqueue(neighbour);
+            }
+        }
+        
+        return false;
     }
 }
