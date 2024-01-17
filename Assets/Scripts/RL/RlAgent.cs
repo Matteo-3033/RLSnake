@@ -105,8 +105,6 @@ public abstract class RlAgent : EpochsPlayer
             Alpha *= alphaReductionFactor;
             currentEpoch++;
             InvokeOnEpochFinished(new OnEpochFinishedArgs(currentEpoch));
-            if (currentEpoch % 250 == 0)
-                SaveModel();
         }
         // ReSharper disable once IteratorNeverReturns
     }
