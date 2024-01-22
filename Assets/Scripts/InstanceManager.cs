@@ -61,6 +61,7 @@ public class InstanceManager : MonoBehaviour
         Debug.Log("Starting game");
         Score = 0;
         
+        snake.Stop();
         grid.Reset();
         appleGenerator.Reset();
         snake.Reset();
