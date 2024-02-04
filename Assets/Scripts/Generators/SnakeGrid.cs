@@ -64,7 +64,7 @@ public class SnakeGrid: MonoBehaviour {
         var fromElement = GetElementAt(from);
         var toElement = GetElementAt(to);
         
-        Debug.Log($"from {from} ({fromElement}) to {to} ({toElement})");
+        //Debug.Log($"from {from} ({fromElement}) to {to} ({toElement})");
 
         if (toElement is Element.None or Element.Apple)
         {
@@ -82,7 +82,7 @@ public class SnakeGrid: MonoBehaviour {
 
     public Vector3 Insert(Element el, Vector2 coord)
     {
-        Debug.Log($"Insert {el} at {coord} ({GetElementAt(coord)})");
+        //Debug.Log($"Insert {el} at {coord} ({GetElementAt(coord)})");
         if (!IsEmpty(coord))
             throw new Exception("Cannot insert element at non-empty cell");
         
