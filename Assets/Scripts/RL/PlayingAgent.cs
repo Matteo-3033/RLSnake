@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,8 +11,8 @@ public class PlayingAgent : EpochsPlayer
     [SerializeField] private Environment environment;
 
     private int _matchesCnt;
-    private InstanceManager.State _state;
-    private readonly Dictionary<InstanceManager.State, Environment.Action> _policy = new(new StateComparer());
+    private Environment.State _state;
+    private readonly Dictionary<Environment.State, Environment.Action> _policy = new();
 
     private readonly List<Environment.Action> _actions =
         Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
@@ -19,23 +20,31 @@ public class PlayingAgent : EpochsPlayer
     private void Start()
     {
         LoadModel();
-        _state = environment.ResetEnvironment();
+        StartCoroutine(nameof(MainLoop));
     }
 
-    private void Update()
+    private IEnumerator MainLoop()
     {
-        _state = environment.GetState();
-        if (environment.IsEpisodeFinished())
+        Debug.Log("Starting playing");
+
+        while (true)
         {
-            InvokeOnEpochFinished(new OnEpochFinishedArgs(_matchesCnt++));
             _state = environment.ResetEnvironment();
+            while (!environment.IsEpisodeFinished())
+            {
+                _state = environment.GetState();
+                var action = _policy[_state];
+                Debug.Log("State: " + _state);
+                Debug.Log("Selected action: " + action);
+                environment.MakeAction(action);
+                yield return new WaitForSeconds(environment.TimeBetweenActions);
+            }
+            InvokeOnEpochFinished(new OnEpochFinishedArgs(_matchesCnt++));
         }
-        
-        var action = _policy[_state];
-        environment.MakeAction(action);
+        // ReSharper disable once IteratorNeverReturns
     }
     
-    private Environment.Action GetMaxForState(IReadOnlyDictionary<StateAction, float> q, InstanceManager.State state)
+    private Environment.Action GetMaxForState(IReadOnlyDictionary<StateAction, float> q, Environment.State state)
     {
         return _actions
             .OrderByDescending(
@@ -50,7 +59,7 @@ public class PlayingAgent : EpochsPlayer
         var jsonData = JsonUtility.FromJson<RlAgent.JsonModel>(json);
 
         var cnt = 0; 
-        var qFunction = new Dictionary<StateAction, float>(new StateActionComparer());
+        var qFunction = new Dictionary<StateAction, float>();
 
         foreach (var state in environment.States)
         {

@@ -9,11 +9,11 @@ public class TdLambdaRlAgent : RlAgent
     
     protected override string ModelFileName => "tdLambda.json";
     
-    private readonly Dictionary<StateAction, float> _e = new (new StateActionComparer());
+    private readonly Dictionary<StateAction, float> _e = new ();
     
     private readonly List<Environment.Action> _actions = Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
 
-    protected override void RlAlgorithm(InstanceManager.State state, Environment.Action action, int reward, InstanceManager.State nextState)
+    protected override void RlAlgorithm(Environment.State state, Environment.Action action, int reward, Environment.State nextState)
     {
         var policyAction = PI(nextState);
         var nextAction = GetMaxForState(nextState);
@@ -53,12 +53,12 @@ public class TdLambdaRlAgent : RlAgent
                 _e[new StateAction(state, action)] = 0F;
     }
     
-    private void UpdateE(InstanceManager.State state, Environment.Action action, float value)
+    private void UpdateE(Environment.State state, Environment.Action action, float value)
     {
         _e[new StateAction(state, action)] = value;
     }
     
-    private float E(InstanceManager.State state, Environment.Action action)
+    private float E(Environment.State state, Environment.Action action)
     {
         return _e[new StateAction(state, action)];
     }

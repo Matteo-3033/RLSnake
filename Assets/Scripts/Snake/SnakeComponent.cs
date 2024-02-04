@@ -67,4 +67,9 @@ public class SnakeComponent : MonoBehaviour
         snakePart.InitPosition(_lastPosition);
         OnGrowth?.Invoke(this, EventArgs.Empty);
     }
+
+    public Vector2 TailGridPosition()
+    {
+        return PreviousSnake == null ? GridPosition : PreviousSnake.TailGridPosition();
+    }
 }

@@ -18,7 +18,7 @@ public class SnakeHead : SnakeComponent
         Down
     }
     
-    private readonly Dictionary<Direction, Vector2> _directionToVector = new()
+    public static readonly Dictionary<Direction, Vector2> DirectionToVector = new()
     {
         { Direction.Right, Vector2.right },
         { Direction.Left, Vector2.left },
@@ -44,13 +44,13 @@ public class SnakeHead : SnakeComponent
         CurrentDirection = direction;
         return true;
     }
-    
-    public bool IsValidDirection(Direction direction)
+
+    private bool IsValidDirection(Direction direction)
     {
         return direction != OppositeDirection(CurrentDirection);
     }
 
-    public Direction OppositeDirection(Direction direction)
+    public static Direction OppositeDirection(Direction direction)
     {
         return direction switch
         {
@@ -68,7 +68,7 @@ public class SnakeHead : SnakeComponent
         while (true)
         {
             yield return new WaitForSeconds(timeBetweenMoves);
-            MoveTo(GridPosition + _directionToVector[CurrentDirection]);
+            MoveTo(GridPosition + DirectionToVector[CurrentDirection]);
         }
         // ReSharper disable once IteratorNeverReturns
     }

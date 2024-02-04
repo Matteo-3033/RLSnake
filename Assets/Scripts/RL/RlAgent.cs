@@ -26,8 +26,8 @@ public abstract class RlAgent : EpochsPlayer
     protected Environment Environment => environment;
     protected abstract string ModelFileName { get; }
     
-    private readonly Dictionary<StateAction, float> _qFunction = new (new StateActionComparer());
-    private readonly Dictionary<InstanceManager.State, Environment.Action> _policy = new(new StateComparer());
+    private readonly Dictionary<StateAction, float> _qFunction = new();
+    private readonly Dictionary<Environment.State, Environment.Action> _policy = new();
 
     private readonly List<Environment.Action> _actions =
         Enum.GetValues(typeof(Environment.Action)).Cast<Environment.Action>().ToList();
@@ -55,6 +55,7 @@ public abstract class RlAgent : EpochsPlayer
         alpha = Settings.Alpha;
         gamma = Settings.Gamma;
         epsilon = Settings.Epsilon;
+        minEpsilon = Settings.MinEpsilon;
         
         Alpha = alpha;
         _epsilon = epsilon;
@@ -84,15 +85,15 @@ public abstract class RlAgent : EpochsPlayer
             while (!environment.IsEpisodeFinished())
             {
                 var action = PI(state);
+                Debug.Log("State: " + state);
+                Debug.Log("Selected action: " + action);
                 environment.MakeAction(action);
 
                 yield return new WaitForSeconds(environment.TimeBetweenActions);
-
-                Debug.Log("State: " + state);
-                Debug.Log("Action done: " + action);
                 
                 var nextState = environment.GetState();
                 var reward = environment.GetReward();
+                Debug.Log("New state: " + nextState);
                 Debug.Log("Reward: " + reward);
                 
                 RlAlgorithm(state, action, reward, nextState);
@@ -104,15 +105,13 @@ public abstract class RlAgent : EpochsPlayer
             Alpha *= alphaReductionFactor;
             currentEpoch++;
             InvokeOnEpochFinished(new OnEpochFinishedArgs(currentEpoch));
-            if (currentEpoch % 250 == 0)
-                SaveModel();
         }
         // ReSharper disable once IteratorNeverReturns
     }
     
-    protected abstract void RlAlgorithm(InstanceManager.State state, Environment.Action action, int reward, InstanceManager.State nextState);
+    protected abstract void RlAlgorithm(Environment.State state, Environment.Action action, int reward, Environment.State nextState);
 
-    protected Environment.Action PI(InstanceManager.State s)
+    protected Environment.Action PI(Environment.State s)
     {
         var action = _policy[s];
         
@@ -122,17 +121,17 @@ public abstract class RlAgent : EpochsPlayer
         return action;
     }
     
-    protected float Q(InstanceManager.State s, Environment.Action a)
+    protected float Q(Environment.State s, Environment.Action a)
     {
         return _qFunction[new StateAction(s, a)];
     }
 
-    protected void UpdatePolicy(InstanceManager.State state, Environment.Action action)
+    protected void UpdatePolicy(Environment.State state, Environment.Action action)
     {
         _policy[state] = action;
     }
 
-    protected void UpdateQ(InstanceManager.State state, Environment.Action action, float expectedReward)
+    protected void UpdateQ(Environment.State state, Environment.Action action, float expectedReward)
     {
         _qFunction[new StateAction(state, action)] = expectedReward;
     }
@@ -143,7 +142,7 @@ public abstract class RlAgent : EpochsPlayer
         return _actions[actionIndex];
     }
     
-    protected Environment.Action GetMaxForState(InstanceManager.State state)
+    protected Environment.Action GetMaxForState(Environment.State state)
     {
         return _actions
             .OrderByDescending(
@@ -248,55 +247,24 @@ public abstract class RlAgent : EpochsPlayer
 [Serializable]
 internal record StateAction
 {
-    public InstanceManager.State state;
-    public Environment.Action action;
+    public readonly Environment.State State;
+    public readonly Environment.Action Action;
 
-    public StateAction(InstanceManager.State state, Environment.Action action)
+    public StateAction(Environment.State state, Environment.Action action)
     {
-        this.state = state;
-        this.action = action;
-    }
-}
-
-internal class StateActionComparer : IEqualityComparer<StateAction>
-{
-    private readonly StateComparer _stateComparer = new StateComparer();
-    
-    public bool Equals(StateAction x, StateAction y)
-    {
-        if (y == null && x == null)
-            return true;
-        
-        if (x == null || y == null)
-            return false;
-        
-        if (x.action != y.action)
-            return false;
-     
-        return _stateComparer.Equals(x.state, y.state);
+        State = state;
+        Action = action;
     }
 
-    public int GetHashCode(StateAction obj)
+    public virtual bool Equals(StateAction other)
     {
-        return _stateComparer.GetHashCode(obj.state) * 23 + (int)obj.action;
-    }
-}
-
-internal class StateComparer : IEqualityComparer<InstanceManager.State>
-{
-    public bool Equals(InstanceManager.State x, InstanceManager.State y)
-    {
-        if (y == null && x == null)
-            return true;
-        
-        if (x == null || y == null)
-            return false;
-        
-        return x.appleDirection == y.appleDirection && x.top == y.top && x.bottom == y.bottom && x.left == y.left && x.right == y.right;
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return State.Equals(other.State) && Action == other.Action;
     }
 
-    public int GetHashCode(InstanceManager.State obj)
+    public override int GetHashCode()
     {
-        return (int)obj.appleDirection * 23 + (int)obj.top * 17 + (int)obj.bottom * 13 + (int)obj.left * 11 + (int)obj.right * 7;
+        return HashCode.Combine(State, (int)Action);
     }
 }

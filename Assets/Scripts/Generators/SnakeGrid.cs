@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -25,8 +26,7 @@ public class SnakeGrid: MonoBehaviour {
     {
         Snake,
         Apple,
-        None,
-        Last
+        None
     }
     
     private void Awake()
@@ -64,7 +64,7 @@ public class SnakeGrid: MonoBehaviour {
         var fromElement = GetElementAt(from);
         var toElement = GetElementAt(to);
         
-        Debug.Log($"from {from} ({fromElement}) to {to} ({toElement})");
+        //Debug.Log($"from {from} ({fromElement}) to {to} ({toElement})");
 
         if (toElement is Element.None or Element.Apple)
         {
@@ -82,7 +82,7 @@ public class SnakeGrid: MonoBehaviour {
 
     public Vector3 Insert(Element el, Vector2 coord)
     {
-        Debug.Log($"Insert {el} at {coord} ({GetElementAt(coord)})");
+        //Debug.Log($"Insert {el} at {coord} ({GetElementAt(coord)})");
         if (!IsEmpty(coord))
             throw new Exception("Cannot insert element at non-empty cell");
         
@@ -91,7 +91,7 @@ public class SnakeGrid: MonoBehaviour {
         return GetPositionAt(coord);
     }
 
-    public Element GetElementAt(Vector2 coord)
+    private Element GetElementAt(Vector2 coord)
     {
         return IsOutside(coord) ? Element.Snake : _grid[(int) coord.y][(int) coord.x];
     }
@@ -132,28 +132,64 @@ public class SnakeGrid: MonoBehaviour {
             .FirstOrDefault();
     }
     
-    public Element[][] GetSquareCenteredIn(Vector2 center, int size = 3)
+    public int BreathFirstSearch(Vector2 start)
     {
-        if (size % 2 == 0)
-            throw new Exception("size must be odd");
+        if (GetElementAt(start) == Element.Snake)
+            return 0;
         
-        var res = new Element[size][];
-
-        var offset = size / 2;
-        for (var i = 0; i < size; i++)
+        var visited = new bool[height][];
+        for (var y = 0; y < visited.Length; y++)
+            visited[y] = new bool[width];
+        
+        var queue = new Queue<Vector2>();
+        queue.Enqueue(start);
+        visited[(int) start.y][(int) start.x] = true;
+        
+        var count = 0;
+        while (queue.Count > 0)
         {
-            res[i] = new Element[size];
-            for (var j = 0; j < size; j++)
+            var current = queue.Dequeue();
+            count++;
+            
+            foreach (var neighbour in new[]{ current + Vector2.up, current + Vector2.right, current + Vector2.down, current + Vector2.left})
             {
-                var y = (int)center.y + i - offset;
-                var x = (int)center.x + j - offset;
-
-                if (y < 0 || y >= _grid.Length || x < 0 || x >= _grid[y].Length)
-                    res[i][j] = Element.Snake;
-                else res[i][j] = _grid[y][x];    // == Element.Snake ? Element.Snake : Element.None;
+                if (GetElementAt(neighbour) == Element.Snake) continue;
+                if (visited[(int) neighbour.y][(int) neighbour.x]) continue;
+                visited[(int) neighbour.y][(int) neighbour.x] = true;
+                queue.Enqueue(neighbour);
             }
         }
+        
+        return count;
+    }
 
-        return res;
+    public bool CanBeReachedFrom(Vector2 to, Vector2 start)
+    {
+        if (to.Equals(start)) return false;
+        if (GetElementAt(start) == Element.Snake) return false;
+        
+        var visited = new bool[height][];
+        for (var y = 0; y < visited.Length; y++)
+            visited[y] = new bool[width];
+
+        var queue = new Queue<Vector2>();
+        queue.Enqueue(start);
+        visited[(int) start.y][(int) start.x] = true;
+        
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            
+            foreach (var neighbour in new[]{ current + Vector2.up, current + Vector2.right, current + Vector2.down, current + Vector2.left})
+            {
+                if (neighbour.Equals(to)) return true;
+                if (GetElementAt(neighbour) == Element.Snake) continue;
+                if (visited[(int) neighbour.y][(int) neighbour.x]) continue;
+                visited[(int) neighbour.y][(int) neighbour.x] = true;
+                queue.Enqueue(neighbour);
+            }
+        }
+        
+        return false;
     }
 }
